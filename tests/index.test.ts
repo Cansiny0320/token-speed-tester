@@ -94,7 +94,7 @@ describe("index (CLI entry point)", () => {
       mockParseConfig.mockReturnValue({
         provider: "anthropic",
         apiKey: "sk-test",
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-opus-4-5-20251101",
         maxTokens: 1024,
         runCount: 3,
         prompt: "Test",
@@ -113,7 +113,7 @@ describe("index (CLI entry point)", () => {
       mockParseConfig.mockReturnValue({
         provider: "openai",
         apiKey: "sk-test",
-        model: "gpt-4o-mini",
+        model: "gpt-5.2",
         maxTokens: 1024,
         runCount: 3,
         prompt: "Test",
@@ -225,7 +225,7 @@ describe("index (CLI entry point)", () => {
       mockParseConfig.mockReturnValue({
         provider: "anthropic",
         apiKey: "sk-test",
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-opus-4-5-20251101",
         maxTokens: 1024,
         runCount: 3,
         prompt: "写一篇关于 AI 的短文",

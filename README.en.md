@@ -62,7 +62,7 @@ token-speed-test --api-key sk-xxx --provider openai
 token-speed-test \
   --api-key sk-ant-xxx \
   --provider anthropic \
-  --model claude-3-5-sonnet-20241022 \
+  --model claude-opus-4-5-20251101 \
   --runs 5
 
 # Test with custom endpoint and prompt
@@ -115,7 +115,7 @@ node dist/index.js --api-key sk-ant-xxx
 🚀 Token 速度测试工具
 ──────────────────────────────────────────
 Provider: anthropic
-Model: claude-3-5-sonnet-20241022
+Model: claude-opus-4-5-20251101
 Max Tokens: 1024
 Runs: 3
 Prompt: 写一篇关于 AI 的短文
