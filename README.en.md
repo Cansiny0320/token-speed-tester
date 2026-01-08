@@ -94,20 +94,20 @@ node dist/index.js --api-key sk-ant-xxx
 
 ## Command Line Options
 
-| Option | Short | Description | Default |
-|--------|-------|-------------|---------|
-| `--api-key` | `-k` | API Key (required) | - |
-| `--provider` | `-p` | API type: `anthropic` or `openai` | `anthropic` |
-| `--model` | `-m` | Model name | Auto-selected by provider |
-| `--url` | `-u` | Custom API endpoint | Official endpoint |
-| `--runs` | `-r` | Number of test runs | `3` |
-| `--prompt` | | Test prompt | "写一篇关于 AI 的短文" |
-| `--max-tokens` | | Maximum output tokens | `1024` |
+| Option         | Short | Description                       | Default                   |
+| -------------- | ----- | --------------------------------- | ------------------------- |
+| `--api-key`    | `-k`  | API Key (required)                | -                         |
+| `--provider`   | `-p`  | API type: `anthropic` or `openai` | `anthropic`               |
+| `--model`      | `-m`  | Model name                        | Auto-selected by provider |
+| `--url`        | `-u`  | Custom API endpoint               | Official endpoint         |
+| `--runs`       | `-r`  | Number of test runs               | `3`                       |
+| `--prompt`     |       | Test prompt                       | "写一篇关于 AI 的短文"    |
+| `--max-tokens` |       | Maximum output tokens             | `1024`                    |
 
 ### Default Models
 
-- **Anthropic**: `claude-3-5-sonnet-20241022`
-- **OpenAI**: `gpt-4o-mini`
+- **Anthropic**: `claude-opus-4-5-20251101`
+- **OpenAI**: `gpt-5.2`
 
 ## Output Example
 
@@ -192,14 +192,14 @@ TPS 分布
 
 ## Metrics Explained
 
-| Metric | Description |
-|--------|-------------|
-| **TTFT** | Time to First Token - latency from request to first token arrival |
-| **Total Time** | Complete duration from request to stream completion |
-| **Total Tokens** | Number of output tokens received |
-| **Average Speed** | Mean tokens per second (totalTokens / totalTime × 1000) |
-| **Peak Speed** | Fastest speed measured over a sliding 10-token window |
-| **TPS Curve** | Tokens received per second throughout the streaming response |
+| Metric            | Description                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| **TTFT**          | Time to First Token - latency from request to first token arrival |
+| **Total Time**    | Complete duration from request to stream completion               |
+| **Total Tokens**  | Number of output tokens received                                  |
+| **Average Speed** | Mean tokens per second (totalTokens / totalTime × 1000)           |
+| **Peak Speed**    | Fastest speed measured over a sliding 10-token window             |
+| **TPS Curve**     | Tokens received per second throughout the streaming response      |
 
 ## Development
 
@@ -240,6 +240,7 @@ git commit -m "feat: add breaking change\n\nBREAKING CHANGE: deprecate old API"
 ```
 
 After pushing to `master` branch, GitHub Actions will automatically:
+
 - Analyze commit types to determine version
 - Update CHANGELOG.md
 - Create Git tag
@@ -251,10 +252,10 @@ After pushing to `master` branch, GitHub Actions will automatically:
 This project maintains high code coverage:
 
 | Coverage Type | Percentage |
-|---------------|------------|
-| Statements | 99.19% |
-| Branches | 94.73% |
-| Functions | 100% |
+| ------------- | ---------- |
+| Statements    | 99.19%     |
+| Branches      | 94.73%     |
+| Functions     | 100%       |
 
 ## License
 
