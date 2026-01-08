@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/Cansiny0320/token-speed-tester/compare/v1.2.2...v1.3.0) (2026-01-08)
+
+
+### Features
+
+* extract changelog content for GitHub Release body ([8fc72c1](https://github.com/Cansiny0320/token-speed-tester/commit/8fc72c1f16eb99d637125bc187685872f96359f7))
+
 ## [1.2.2](https://github.com/Cansiny0320/token-speed-tester/compare/v1.2.1...v1.2.2) (2026-01-08)
 
 
