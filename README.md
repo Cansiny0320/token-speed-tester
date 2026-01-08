@@ -51,6 +51,8 @@ npm install token-speed-tester
 ```bash
 # 测试 Anthropic API（默认）
 token-speed-test --api-key sk-ant-xxx
+# 输出英文结果
+token-speed-test --api-key sk-ant-xxx --lang en
 
 # 测试 OpenAI API
 token-speed-test --api-key sk-xxx --provider openai
@@ -104,6 +106,7 @@ node dist/index.js --api-key sk-ant-xxx
 | `--runs`       | `-r` | 测试次数                          | `3`                    |
 | `--prompt`     |      | 测试提示词                        | "写一篇关于 AI 的短文" |
 | `--max-tokens` |      | 最大输出 Token 数                 | `1024`                 |
+| `--lang`       |      | 输出语言: `zh` 或 `en`            | `zh`                   |
 
 ### 默认模型
 

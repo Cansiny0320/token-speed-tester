@@ -72,7 +72,7 @@ describe("chart", () => {
     it("should handle empty TPS array", () => {
       const result = renderSpeedChart([]);
 
-      expect(result).toContain("No data available");
+      expect(result).toContain("没有可用于图表的数据");
     });
 
     it("should respect custom maxSpeed parameter", () => {
@@ -114,7 +114,7 @@ describe("chart", () => {
     it("should handle empty TPS array", () => {
       const result = renderTPSHistogram([]);
 
-      expect(result).toContain("No TPS data available");
+      expect(result).toContain("没有 TPS 数据可用");
     });
 
     it("should handle single TPS value", () => {
@@ -209,6 +209,24 @@ describe("chart", () => {
       expect(result).toContain("60.25"); // 峰值 TPS
     });
 
+    it("should render English labels when lang is en", () => {
+      const metrics: CalculatedMetrics = {
+        ttft: 120.5,
+        totalTime: 2500.75,
+        totalTokens: 125,
+        averageSpeed: 50.03,
+        peakSpeed: 75.8,
+        peakTps: 60.25,
+        tps: [10, 15, 20],
+      };
+      const result = renderSingleResult(metrics, 0, "en");
+
+      expect(result).toContain("[Run 1]");
+      expect(result).toContain("Total Time");
+      expect(result).toContain("Total Tokens");
+      expect(result).toContain("Avg Speed");
+    });
+
     it("should show correct run index", () => {
       const metrics: CalculatedMetrics = {
         ttft: 100,
@@ -269,6 +287,15 @@ describe("chart", () => {
       expect(result).toContain("统计汇总");
       expect(result).toContain("Token 速度趋势图");
       expect(result).toContain("TPS 分布");
+    });
+
+    it("should render English report when lang is en", () => {
+      const result = renderReport(mockStatsResult, "en");
+
+      expect(result).toContain("Token Speed Test Report");
+      expect(result).toContain("Summary (N=3)");
+      expect(result).toContain("Token Speed Trend");
+      expect(result).toContain("TPS Distribution");
     });
 
     it("should include separator lines", () => {

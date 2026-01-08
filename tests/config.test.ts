@@ -17,6 +17,7 @@ describe("config", () => {
       expect(result.maxTokens).toBe(1024);
       expect(result.runCount).toBe(3);
       expect(result.prompt).toBe("写一篇关于 AI 的短文");
+      expect(result.lang).toBe("zh");
       expect(result.baseURL).toBeUndefined();
     });
 
@@ -67,6 +68,16 @@ describe("config", () => {
       });
 
       expect(result.prompt).toBe(customPrompt);
+    });
+
+    it("should use English defaults when lang is en", () => {
+      const result = parseConfig({
+        apiKey: VALID_API_KEY,
+        lang: "en",
+      });
+
+      expect(result.lang).toBe("en");
+      expect(result.prompt).toBe("Write a short essay about AI");
     });
 
     it("should use custom baseURL when provided", () => {
@@ -129,6 +140,15 @@ describe("config", () => {
           provider: "invalid" as Provider,
         })
       ).toThrow("Invalid provider: invalid. Must be 'anthropic' or 'openai'.");
+    });
+
+    it("should throw error for invalid lang", () => {
+      expect(() =>
+        parseConfig({
+          apiKey: VALID_API_KEY,
+          lang: "jp",
+        })
+      ).toThrow("Invalid lang: jp. Must be 'zh' or 'en'.");
     });
 
     it("should throw error for negative maxTokens", () => {
@@ -212,6 +232,7 @@ describe("config", () => {
         maxTokens: 4096,
         runs: 10,
         prompt: "Write a story",
+        lang: "en",
       });
 
       expect(result).toEqual({
@@ -222,6 +243,7 @@ describe("config", () => {
         maxTokens: 4096,
         runCount: 10,
         prompt: "Write a story",
+        lang: "en",
       });
     });
 
@@ -262,6 +284,7 @@ describe("config", () => {
       maxTokens: 1024,
       runCount: 3,
       prompt: "Test prompt",
+      lang: "zh",
     };
 
     it("should validate a correct config", () => {
@@ -394,6 +417,7 @@ describe("config", () => {
         maxTokens: 1024,
         runCount: 3,
         prompt: "Test",
+        lang: "zh",
       };
       const result = validateConfig(configWithoutURL);
       expect(result.valid).toBe(true);
@@ -407,6 +431,7 @@ describe("config", () => {
         maxTokens: 1024,
         runCount: 3,
         prompt: "Test",
+        lang: "zh",
       };
       const result = validateConfig(openaiConfig);
       expect(result.valid).toBe(true);

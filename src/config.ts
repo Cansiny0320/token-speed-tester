@@ -1,3 +1,5 @@
+import { getMessages, resolveLang, type Lang } from "./i18n.js";
+
 export type Provider = "anthropic" | "openai";
 
 export interface Config {
@@ -8,6 +10,7 @@ export interface Config {
   maxTokens: number;
   runCount: number;
   prompt: string;
+  lang: Lang;
 }
 
 export interface ParsedArgs {
@@ -18,6 +21,7 @@ export interface ParsedArgs {
   maxTokens?: number;
   runs?: number;
   prompt?: string;
+  lang?: string;
 }
 
 const DEFAULT_MODELS: Record<Provider, string> = {
@@ -27,8 +31,6 @@ const DEFAULT_MODELS: Record<Provider, string> = {
 
 const DEFAULT_MAX_TOKENS = 1024;
 const DEFAULT_RUNS = 3;
-const DEFAULT_PROMPT = "写一篇关于 AI 的短文";
-
 /**
  * 解析命令行参数并生成配置
  */
@@ -40,8 +42,12 @@ export function parseConfig(args: ParsedArgs): Config {
     model,
     maxTokens = DEFAULT_MAX_TOKENS,
     runs = DEFAULT_RUNS,
-    prompt = DEFAULT_PROMPT,
+    prompt,
+    lang: langInput,
   } = args;
+  const lang = resolveLang(langInput);
+  const messages = getMessages(lang);
+  const finalPrompt = prompt ?? messages.defaultPrompt;
 
   // 验证必填参数
   if (!apiKey || apiKey.trim() === "") {
@@ -72,7 +78,8 @@ export function parseConfig(args: ParsedArgs): Config {
     model: finalModel,
     maxTokens,
     runCount: runs,
-    prompt: prompt.trim(),
+    prompt: finalPrompt.trim(),
+    lang,
   };
 }
 
@@ -113,6 +120,10 @@ export function validateConfig(config: Config): { valid: boolean; error?: string
 
   if (!config.prompt || config.prompt.trim() === "") {
     return { valid: false, error: "prompt cannot be empty" };
+  }
+
+  if (config.lang !== "zh" && config.lang !== "en") {
+    return { valid: false, error: `Invalid lang: ${config.lang}` };
   }
 
   return { valid: true };

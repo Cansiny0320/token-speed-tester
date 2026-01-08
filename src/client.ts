@@ -2,6 +2,7 @@ import { performance } from "node:perf_hooks";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 import type { Config } from "./config.js";
+import { getMessages } from "./i18n.js";
 import type { StreamMetrics } from "./metrics.js";
 import { createTokenizer } from "./tokenizer.js";
 
@@ -175,10 +176,11 @@ export async function streamTest(config: Config): Promise<StreamMetrics> {
  */
 export async function runMultipleTests(config: Config): Promise<StreamMetrics[]> {
   const results: StreamMetrics[] = [];
+  const messages = getMessages(config.lang);
 
   for (let i = 0; i < config.runCount; i++) {
     if (config.runCount > 1) {
-      const label = `\n[运行 ${i + 1}/${config.runCount}]`;
+      const label = `\n${messages.runProgressLabel(i + 1, config.runCount)}`;
       console.log(label);
       console.log("-".repeat(label.length - 1));
     }

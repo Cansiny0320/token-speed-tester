@@ -98,6 +98,7 @@ describe("index (CLI entry point)", () => {
         maxTokens: 1024,
         runCount: 3,
         prompt: "Test",
+        lang: "zh",
       });
 
       const config = parseConfig({
@@ -117,6 +118,7 @@ describe("index (CLI entry point)", () => {
         maxTokens: 1024,
         runCount: 3,
         prompt: "Test",
+        lang: "zh",
       });
 
       const config = parseConfig({
@@ -135,6 +137,7 @@ describe("index (CLI entry point)", () => {
         maxTokens: 1024,
         runCount: 5,
         prompt: "Test",
+        lang: "zh",
       });
 
       const config = parseConfig({
@@ -155,6 +158,7 @@ describe("index (CLI entry point)", () => {
         maxTokens: 1024,
         runCount: 2,
         prompt: "Test prompt",
+        lang: "zh",
       });
 
       const mockResults = [
@@ -229,6 +233,7 @@ describe("index (CLI entry point)", () => {
         maxTokens: 1024,
         runCount: 3,
         prompt: "写一篇关于 AI 的短文",
+        lang: "zh",
       });
 
       const config = parseConfig({ apiKey: "sk-test" });
@@ -247,6 +252,7 @@ describe("index (CLI entry point)", () => {
         runCount: 10,
         prompt: "Custom prompt",
         baseURL: "https://api.test.com",
+        lang: "en",
       });
 
       const config = parseConfig({

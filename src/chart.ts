@@ -1,5 +1,6 @@
 import stringWidth from "string-width";
 import type { CalculatedMetrics, StatsResult } from "./metrics.js";
+import { DEFAULT_LANG, getMessages, type Lang } from "./i18n.js";
 
 const BLOCK_CHAR = "█";
 const CHART_WIDTH = 50;
@@ -27,9 +28,14 @@ function padStartWidth(text: string, width: number): string {
 /**
  * 渲染速度趋势图
  */
-export function renderSpeedChart(tps: number[], maxSpeed?: number): string {
+export function renderSpeedChart(
+  tps: number[],
+  maxSpeed?: number,
+  lang: Lang = DEFAULT_LANG
+): string {
+  const messages = getMessages(lang);
   if (tps.length === 0) {
-    return "No data available for chart";
+    return messages.noChartData;
   }
 
   const actualMax = maxSpeed ?? Math.max(...tps, 1);
@@ -42,7 +48,7 @@ export function renderSpeedChart(tps: number[], maxSpeed?: number): string {
   const axisPrefix = `│ ${padStartWidth("", Y_LABEL_WIDTH)} ┼`;
 
   const lines: string[] = [];
-  lines.push("Token 速度趋势图 (TPS)");
+  lines.push(messages.speedChartTitle);
 
   // Y 轴标签和边框
   lines.push("┌" + "─".repeat(chartWidth) + "┐");
@@ -111,13 +117,14 @@ function generateXLabels(dataPoints: number, maxLabels: number): string[] {
 /**
  * 渲染 TPS 直方图
  */
-export function renderTPSHistogram(tps: number[]): string {
+export function renderTPSHistogram(tps: number[], lang: Lang = DEFAULT_LANG): string {
+  const messages = getMessages(lang);
   if (tps.length === 0) {
-    return "No TPS data available";
+    return messages.noTpsData;
   }
 
   const lines: string[] = [];
-  lines.push("TPS 分布");
+  lines.push(messages.tpsHistogramTitle);
 
   // 计算分布区间
   const maxTps = Math.max(...tps, 1);
@@ -155,23 +162,24 @@ export function renderTPSHistogram(tps: number[]): string {
 /**
  * 渲染统计汇总表
  */
-export function renderStatsTable(stats: StatsResult): string {
+export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG): string {
+  const messages = getMessages(lang);
   const lines: string[] = [];
   lines.push("");
-  lines.push("统计汇总 (N=" + stats.sampleSize + ")");
+  lines.push(messages.statsSummaryTitle(stats.sampleSize));
 
   // 表头
   const headerRow =
     "│ " +
-    padEndWidth("指标", STAT_LABEL_WIDTH) +
+    padEndWidth(messages.statsHeaders.metric, STAT_LABEL_WIDTH) +
     " │ " +
-    padStartWidth("均值", STAT_VALUE_WIDTH) +
+    padStartWidth(messages.statsHeaders.mean, STAT_VALUE_WIDTH) +
     " │ " +
-    padStartWidth("最小值", STAT_VALUE_WIDTH) +
+    padStartWidth(messages.statsHeaders.min, STAT_VALUE_WIDTH) +
     " │ " +
-    padStartWidth("最大值", STAT_VALUE_WIDTH) +
+    padStartWidth(messages.statsHeaders.max, STAT_VALUE_WIDTH) +
     " │ " +
-    padStartWidth("标准差", STAT_VALUE_WIDTH) +
+    padStartWidth(messages.statsHeaders.stdDev, STAT_VALUE_WIDTH) +
     " │";
 
   const tableWidth = stringWidth(headerRow) - 2;
@@ -182,7 +190,7 @@ export function renderStatsTable(stats: StatsResult): string {
   // TTFT
   lines.push(
     formatStatRow(
-      "TTFT (ms)",
+      messages.statsLabels.ttft,
       stats.mean.ttft,
       stats.min.ttft,
       stats.max.ttft,
@@ -195,7 +203,7 @@ export function renderStatsTable(stats: StatsResult): string {
   // 总耗时
   lines.push(
     formatStatRow(
-      "总耗时 (ms)",
+      messages.statsLabels.totalTime,
       stats.mean.totalTime,
       stats.min.totalTime,
       stats.max.totalTime,
@@ -208,7 +216,7 @@ export function renderStatsTable(stats: StatsResult): string {
   // 总 token 数
   lines.push(
     formatStatRow(
-      "总 Token 数",
+      messages.statsLabels.totalTokens,
       stats.mean.totalTokens,
       stats.min.totalTokens,
       stats.max.totalTokens,
@@ -221,7 +229,7 @@ export function renderStatsTable(stats: StatsResult): string {
   // 平均速度
   lines.push(
     formatStatRow(
-      "平均速度",
+      messages.statsLabels.averageSpeed,
       stats.mean.averageSpeed,
       stats.min.averageSpeed,
       stats.max.averageSpeed,
@@ -234,7 +242,7 @@ export function renderStatsTable(stats: StatsResult): string {
   // 峰值速度
   lines.push(
     formatStatRow(
-      "峰值速度",
+      messages.statsLabels.peakSpeed,
       stats.mean.peakSpeed,
       stats.min.peakSpeed,
       stats.max.peakSpeed,
@@ -248,7 +256,7 @@ export function renderStatsTable(stats: StatsResult): string {
   // 峰值 TPS
   lines.push(
     formatStatRow(
-      "峰值 TPS",
+      messages.statsLabels.peakTps,
       stats.mean.peakTps,
       stats.min.peakTps,
       stats.max.peakTps,
@@ -303,39 +311,47 @@ function formatTimeWithDecimals(ms: number): string {
 /**
  * 渲染单次测试结果
  */
-export function renderSingleResult(metrics: CalculatedMetrics, runIndex: number): string {
+export function renderSingleResult(
+  metrics: CalculatedMetrics,
+  runIndex: number,
+  lang: Lang = DEFAULT_LANG
+): string {
+  const messages = getMessages(lang);
   const lines: string[] = [];
-  lines.push(`\n[运行 ${runIndex + 1}]`);
-  lines.push(`  TTFT: ${formatTimeWithDecimals(metrics.ttft)}`);
-  lines.push(`  总耗时: ${formatTimeWithDecimals(metrics.totalTime)}`);
-  lines.push(`  总 Token 数: ${metrics.totalTokens}`);
-  lines.push(`  平均速度: ${metrics.averageSpeed.toFixed(2)} tokens/s`);
-  lines.push(`  峰值速度: ${metrics.peakSpeed.toFixed(2)} tokens/s`);
-  lines.push(`  峰值 TPS: ${metrics.peakTps.toFixed(2)} tokens/s`);
+  lines.push(`\n${messages.runLabel(runIndex + 1)}`);
+  lines.push(`  ${messages.resultLabels.ttft}: ${formatTimeWithDecimals(metrics.ttft)}`);
+  lines.push(`  ${messages.resultLabels.totalTime}: ${formatTimeWithDecimals(metrics.totalTime)}`);
+  lines.push(`  ${messages.resultLabels.totalTokens}: ${metrics.totalTokens}`);
+  lines.push(
+    `  ${messages.resultLabels.averageSpeed}: ${metrics.averageSpeed.toFixed(2)} tokens/s`
+  );
+  lines.push(`  ${messages.resultLabels.peakSpeed}: ${metrics.peakSpeed.toFixed(2)} tokens/s`);
+  lines.push(`  ${messages.resultLabels.peakTps}: ${metrics.peakTps.toFixed(2)} tokens/s`);
   return lines.join("\n");
 }
 
 /**
  * 渲染完整的测试报告
  */
-export function renderReport(stats: StatsResult): string {
+export function renderReport(stats: StatsResult, lang: Lang = DEFAULT_LANG): string {
+  const messages = getMessages(lang);
   const lines: string[] = [];
 
   lines.push("\n" + "═".repeat(72));
-  lines.push("Token 速度测试报告");
+  lines.push(messages.reportTitle);
   lines.push("═".repeat(72));
 
   // 汇总统计
-  lines.push(renderStatsTable(stats));
+  lines.push(renderStatsTable(stats, lang));
 
   // 速度趋势图
   if (stats.mean.tps.length > 0) {
-    lines.push("\n" + renderSpeedChart(stats.mean.tps));
+    lines.push("\n" + renderSpeedChart(stats.mean.tps, undefined, lang));
   }
 
   // TPS 直方图
   if (stats.mean.tps.length > 0) {
-    lines.push("\n" + renderTPSHistogram(stats.mean.tps));
+    lines.push("\n" + renderTPSHistogram(stats.mean.tps, lang));
   }
 
   return lines.join("\n");

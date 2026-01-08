@@ -9,6 +9,7 @@ import { parseConfig } from "./config.js";
 import { runMultipleTests } from "./client.js";
 import { calculateMetrics, calculateStats } from "./metrics.js";
 import { renderReport, renderSingleResult } from "./chart.js";
+import { DEFAULT_LANG, getMessages } from "./i18n.js";
 
 function getCliVersion(): string {
   try {
@@ -35,12 +36,14 @@ program
   .option("-m, --model <model>", "Model name")
   .option("--max-tokens <number>", "Maximum output tokens", "1024")
   .option("-r, --runs <number>", "Number of test runs", "3")
-  .option("--prompt <text>", "Test prompt", "写一篇关于 AI 的短文")
+  .option("--prompt <text>", "Test prompt")
+  .option("--lang <lang>", "Output language: zh or en", "zh")
   .parse(process.argv);
 
 const options = program.opts();
 
 async function main() {
+  let messages = getMessages(DEFAULT_LANG);
   try {
     // 解析配置
     const config = parseConfig({
@@ -51,25 +54,29 @@ async function main() {
       maxTokens: parseInt(options.maxTokens, 10),
       runs: parseInt(options.runs, 10),
       prompt: options.prompt,
+      lang: options.lang,
     });
+    messages = getMessages(config.lang);
 
     // 显示配置信息
-    console.log(chalk.cyan("\n🚀 Token 速度测试工具"));
+    console.log(chalk.cyan(`\n${messages.appTitle}`));
     console.log(chalk.gray("─".repeat(50)));
-    console.log(chalk.gray(`Provider: ${chalk.white(config.provider)}`));
-    console.log(chalk.gray(`Model: ${chalk.white(config.model)}`));
-    console.log(chalk.gray(`Max Tokens: ${chalk.white(config.maxTokens)}`));
-    console.log(chalk.gray(`Runs: ${chalk.white(config.runCount)}`));
+    console.log(chalk.gray(`${messages.configLabels.provider}: ${chalk.white(config.provider)}`));
+    console.log(chalk.gray(`${messages.configLabels.model}: ${chalk.white(config.model)}`));
+    console.log(chalk.gray(`${messages.configLabels.maxTokens}: ${chalk.white(config.maxTokens)}`));
+    console.log(chalk.gray(`${messages.configLabels.runs}: ${chalk.white(config.runCount)}`));
     console.log(
       chalk.gray(
-        `Prompt: ${chalk.white(config.prompt.substring(0, 50))}${config.prompt.length > 50 ? "..." : ""}`
+        `${messages.configLabels.prompt}: ${chalk.white(config.prompt.substring(0, 50))}${
+          config.prompt.length > 50 ? "..." : ""
+        }`
       )
     );
     console.log(chalk.gray("─".repeat(50)));
 
     // 执行测试
-    console.log(chalk.yellow("\n⏳ 正在运行测试...\n"));
-    console.log(chalk.gray("模型输出 (流式):\n"));
+    console.log(chalk.yellow(`\n${messages.runningTests}\n`));
+    console.log(chalk.gray(`${messages.streamingOutput}\n`));
 
     const results = await runMultipleTests(config);
 
@@ -78,21 +85,21 @@ async function main() {
 
     // 显示每次运行的结果
     for (let i = 0; i < allMetrics.length; i++) {
-      console.log(chalk.gray(renderSingleResult(allMetrics[i], i)));
+      console.log(chalk.gray(renderSingleResult(allMetrics[i], i, config.lang)));
     }
 
     // 计算统计
     const stats = calculateStats(allMetrics);
 
     // 显示报告
-    console.log(chalk.cyan("\n" + renderReport(stats)));
+    console.log(chalk.cyan("\n" + renderReport(stats, config.lang)));
 
-    console.log(chalk.green("\n✅ 测试完成!\n"));
+    console.log(chalk.green(`\n${messages.testComplete}\n`));
   } catch (error) {
     if (error instanceof Error) {
-      console.error(chalk.red(`\n❌ 错误: ${error.message}\n`));
+      console.error(chalk.red(`\n${messages.errorPrefix}: ${error.message}\n`));
     } else {
-      console.error(chalk.red("\n❌ 发生未知错误\n"));
+      console.error(chalk.red(`\n${messages.unknownError}\n`));
     }
     process.exit(1);
   }

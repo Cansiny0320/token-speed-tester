@@ -63,6 +63,7 @@ const mockConfig: Config = {
   maxTokens: 100,
   runCount: 1,
   prompt: "Test",
+  lang: "zh",
   baseURL: "https://api.test.com",
 };
 
