@@ -13,8 +13,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     outputs:
-      release-created: ${{ steps.release.outputs.release-created }}
-      version: ${{ steps.release.outputs.version }}
+      release-created: ${{ steps.semantic.outputs.new-release-published }}
+      version: ${{ steps.semantic.outputs.release-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,9 +44,9 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Release
-        id: release
-        uses: semantic-release/semantic-release@master
+      - name: Run semantic-release
+        id: semantic
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: github-actions[bot]
