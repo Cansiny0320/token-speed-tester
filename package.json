@@ -24,7 +24,10 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --run --coverage",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "release": "npm run test && npm run build && npm version patch && git push --follow-tags",
+    "release:minor": "npm run test && npm run build && npm version minor && git push --follow-tags",
+    "release:major": "npm run test && npm run build && npm version major && git push --follow-tags"
   },
   "keywords": [
     "llm",
