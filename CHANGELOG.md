@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/Cansiny0320/token-speed-tester/compare/v1.1.1...v1.2.0) (2026-01-08)
+
+
+### Features
+
+* add automated release workflow ([1f21338](https://github.com/Cansiny0320/token-speed-tester/commit/1f2133826c4c401f6dd1cb22f1a9e793ed540dac))
+
 ## [1.1.1](https://github.com/Cansiny0320/token-speed-tester/compare/v1.1.0...v1.1.1) (2026-01-08)
 
 
