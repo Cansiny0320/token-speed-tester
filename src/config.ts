@@ -109,3 +109,4 @@ export function validateConfig(config: Config): { valid: boolean; error?: string
 
   return { valid: true };
 }
+// test
