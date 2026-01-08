@@ -69,6 +69,7 @@ async function main() {
 
     // 执行测试
     console.log(chalk.yellow("\n⏳ 正在运行测试...\n"));
+    console.log(chalk.gray("模型输出 (流式):\n"));
 
     const results = await runMultipleTests(config);
 

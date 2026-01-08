@@ -14,6 +14,7 @@ export async function anthropicStreamTest(config: Config): Promise<StreamMetrics
   let firstTokenRecorded = false;
   let fullText = "";
   let tokenCount = 0;
+  let wroteOutput = false;
 
   const encoding = createTokenizer(config.model);
   const client = new Anthropic({
@@ -36,6 +37,8 @@ export async function anthropicStreamTest(config: Config): Promise<StreamMetrics
         const text = event.delta.text;
 
         if (text && text.length > 0) {
+          process.stdout.write(text);
+          wroteOutput = true;
           fullText += text;
           const encoded = encoding.encode(fullText);
           const newTokens = encoded.length - tokenCount;
@@ -62,6 +65,9 @@ export async function anthropicStreamTest(config: Config): Promise<StreamMetrics
     }
     throw error;
   } finally {
+    if (wroteOutput) {
+      process.stdout.write("\n");
+    }
     encoding.free();
   }
 
@@ -86,6 +92,7 @@ export async function openaiStreamTest(config: Config): Promise<StreamMetrics> {
   let firstTokenRecorded = false;
   let fullText = "";
   let tokenCount = 0;
+  let wroteOutput = false;
 
   const encoding = createTokenizer(config.model);
   const client = new OpenAI({
@@ -110,6 +117,8 @@ export async function openaiStreamTest(config: Config): Promise<StreamMetrics> {
         const content = delta.content;
 
         if (content.length > 0) {
+          process.stdout.write(content);
+          wroteOutput = true;
           fullText += content;
           const encoded = encoding.encode(fullText);
           const newTokens = encoded.length - tokenCount;
@@ -136,6 +145,9 @@ export async function openaiStreamTest(config: Config): Promise<StreamMetrics> {
     }
     throw error;
   } finally {
+    if (wroteOutput) {
+      process.stdout.write("\n");
+    }
     encoding.free();
   }
 
