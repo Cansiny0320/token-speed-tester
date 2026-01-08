@@ -1,113 +1,115 @@
-# Token 速度测试工具
+# Token Speed Tester
 
-> 用于测量和分析 LLM API Token 流式输出性能的命令行工具
+> A CLI tool to measure and analyze LLM API token streaming performance
 
-[![npm 版本](https://badge.fury.io/js/token-speed-tester.svg)](https://www.npmjs.com/package/token-speed-tester)
-[![开源协议](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![测试](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/publish.yml/badge.svg)](https://github.com/Cansiny0320/token-speed-tester/actions)
+[中文文档](README.md) |
 
-一个强大的命令行工具，用于测试 LLM API 的 Token 输出速度。支持 **Anthropic** 和 **OpenAI** 兼容的 API，提供详细指标包括 TTFT（首字延迟）、吞吐量、峰值速度以及多次运行的统计分析。
+[![npm version](https://badge.fury.io/js/token-speed-tester.svg)](https://www.npmjs.com/package/token-speed-tester)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/publish.yml/badge.svg)](https://github.com/Cansiny0320/token-speed-tester/actions)
 
-## 特性
+A powerful command-line tool for testing token output speed of LLM APIs. Supports **Anthropic** and **OpenAI** compatible APIs, providing detailed metrics including TTFT (Time to First Token), throughput, peak speed, and statistical analysis across multiple runs.
 
-- **双协议支持**：兼容 Anthropic Messages API 和 OpenAI Chat Completions API
-- **流式性能测量**：以毫秒级精度记录每个 Token 的到达时间
-- **全面指标**：
-  - **TTFT**（首字延迟）：首个 Token 到达前的延迟
-  - **平均速度**：每秒平均 Token 数
-  - **峰值速度**：10 个 Token 滑动窗口内的最快速度
-  - **TPS 曲线**：整个流式响应中每秒接收的 Token 数
-- **统计分析**：多次测试运行的均值、最小值、最大值和标准差
-- **ASCII 可视化**：精美的终端图表和数据表格
-- **自定义端点**：测试兼容 OpenAI/Anthropic 协议的第三方 API
+## Features
 
-## 安装
+- **Dual Protocol Support**: Works with Anthropic Messages API and OpenAI Chat Completions API
+- **Streaming Performance**: Measures each token's arrival time with millisecond precision
+- **Comprehensive Metrics**:
+  - **TTFT** (Time to First Token): Latency before first token arrives
+  - **Average Speed**: Mean tokens per second
+  - **Peak Speed**: Fastest speed over a 10-token window
+  - **TPS Curve**: Tokens received per second throughout the stream
+- **Statistical Analysis**: Mean, min, max, and standard deviation across multiple test runs
+- **ASCII Visualization**: Beautiful terminal-based charts and tables
+- **Custom Endpoints**: Test third-party APIs compatible with OpenAI/Anthropic protocols
 
-### 全局安装（推荐）
+## Installation
+
+### Global Installation (Recommended)
 
 ```bash
 npm install -g token-speed-tester
 ```
 
-### 使用 npx（无需安装）
+### Using npx (No Installation)
 
 ```bash
 npx token-speed-tester --api-key sk-xxx
 ```
 
-### 本地安装
+### Local Installation
 
 ```bash
 npm install token-speed-tester
 ```
 
-## 使用方法
+## Usage
 
-### 基本用法
+### Basic Usage
 
 ```bash
-# 测试 Anthropic API（默认）
+# Test Anthropic API (default)
 token-speed-test --api-key sk-ant-xxx
 
-# 测试 OpenAI API
+# Test OpenAI API
 token-speed-test --api-key sk-xxx --provider openai
 ```
 
-### 高级选项
+### Advanced Options
 
 ```bash
-# 自定义模型和多次测试
+# Custom model and multiple test runs
 token-speed-test \
   --api-key sk-ant-xxx \
   --provider anthropic \
   --model claude-3-5-sonnet-20241022 \
   --runs 5
 
-# 测试自定义端点和提示词
+# Test with custom endpoint and prompt
 token-speed-test \
   --api-key sk-xxx \
   --provider openai \
   --url https://api.example.com/v1 \
   --model custom-model \
-  --prompt "解释量子计算" \
+  --prompt "Explain quantum computing" \
   --max-tokens 2048 \
   --runs 10
 ```
 
-### 本地开发
+### Local Development
 
 ```bash
-# 克隆并安装依赖
+# Clone and install dependencies
 git clone https://github.com/Cansiny0320/token-speed-tester.git
 cd token-speed-tester
 npm install
 
-# 使用 tsx 直接运行
+# Run directly with tsx
 npm run dev -- --api-key sk-ant-xxx
 
-# 或构建后运行
+# Or build and run
 npm run build
 node dist/index.js --api-key sk-ant-xxx
 ```
 
-## 命令行选项
+## Command Line Options
 
-| 选项 | 简写 | 说明 | 默认值 |
-|------|------|------|--------|
-| `--api-key` | `-k` | API Key（必填） | - |
-| `--provider` | `-p` | API 类型：`anthropic` 或 `openai` | `anthropic` |
-| `--model` | `-m` | 模型名称 | 根据提供商自动选择 |
-| `--url` | `-u` | 自定义 API 端点 | 官方端点 |
-| `--runs` | `-r` | 测试次数 | `3` |
-| `--prompt` | | 测试提示词 | "写一篇关于 AI 的短文" |
-| `--max-tokens` | | 最大输出 Token 数 | `1024` |
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--api-key` | `-k` | API Key (required) | - |
+| `--provider` | `-p` | API type: `anthropic` or `openai` | `anthropic` |
+| `--model` | `-m` | Model name | Auto-selected by provider |
+| `--url` | `-u` | Custom API endpoint | Official endpoint |
+| `--runs` | `-r` | Number of test runs | `3` |
+| `--prompt` | | Test prompt | "写一篇关于 AI 的短文" |
+| `--max-tokens` | | Maximum output tokens | `1024` |
 
-### 默认模型
+### Default Models
 
 - **Anthropic**: `claude-3-5-sonnet-20241022`
 - **OpenAI**: `gpt-4o-mini`
 
-## 输出示例
+## Output Example
 
 ```
 🚀 Token 速度测试工具
@@ -188,75 +190,71 @@ TPS 分布
 ✅ 测试完成!
 ```
 
-## 指标说明
+## Metrics Explained
 
-| 指标 | 说明 |
-|------|------|
-| **TTFT** | 首字延迟 - 从请求到首个 Token 到达的时间 |
-| **总耗时** | 从请求到流式响应完成的完整时长 |
-| **总 Token 数** | 接收到的输出 Token 数量 |
-| **平均速度** | 每秒平均 Token 数（totalTokens / totalTime × 1000） |
-| **峰值速度** | 10 个 Token 滑动窗口内测量的最快速度 |
-| **TPS 曲线** | 整个流式响应中每秒接收的 Token 数 |
+| Metric | Description |
+|--------|-------------|
+| **TTFT** | Time to First Token - latency from request to first token arrival |
+| **Total Time** | Complete duration from request to stream completion |
+| **Total Tokens** | Number of output tokens received |
+| **Average Speed** | Mean tokens per second (totalTokens / totalTime × 1000) |
+| **Peak Speed** | Fastest speed measured over a sliding 10-token window |
+| **TPS Curve** | Tokens received per second throughout the streaming response |
 
-## 开发
+## Development
 
-### 运行测试
+### Running Tests
 
 ```bash
-# 运行测试
+# Run tests
 npm test
 
-# 使用 UI 运行测试
+# Run tests with UI
 npm run test:ui
 
-# 生成覆盖率报告
+# Generate coverage report
 npm run test:coverage
 ```
 
-### 构建
+### Building
 
 ```bash
 npm run build
 ```
 
-### 发布
+### Release
 
 ```bash
-# 补丁版本发布 (1.0.3 -> 1.0.4)
+# Patch release (1.0.3 -> 1.0.4)
 npm run release
 
-# 次要版本发布 (1.0.3 -> 1.1.0)
+# Minor release (1.0.3 -> 1.1.0)
 npm run release:minor
 
-# 主要版本发布 (1.0.3 -> 2.0.0)
+# Major release (1.0.3 -> 2.0.0)
 npm run release:major
 ```
 
-## 测试覆盖率
+## Test Coverage
 
-本项目保持高代码覆盖率：
+This project maintains high code coverage:
 
-| 覆盖率类型 | 百分比 |
+| Coverage Type | Percentage |
 |---------------|------------|
-| 语句覆盖率 | 99.19% |
-| 分支覆盖率 | 94.73% |
-| 函数覆盖率 | 100% |
+| Statements | 99.19% |
+| Branches | 94.73% |
+| Functions | 100% |
 
-## 开源协议
+## License
 
 MIT © [Cansiny0320](https://github.com/Cansiny0320)
 
-## 贡献
+## Contributing
 
-欢迎贡献！请随时提交 Pull Request。
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 相关链接
+## Links
 
-- [npm 包](https://www.npmjs.com/package/token-speed-tester)
-- [GitHub 仓库](https://github.com/Cansiny0320/token-speed-tester)
-- [问题反馈](https://github.com/Cansiny0320/token-speed-tester/issues)
-
----
-
-[English](README.md)
+- [npm Package](https://www.npmjs.com/package/token-speed-tester)
+- [GitHub Repository](https://github.com/Cansiny0320/token-speed-tester)
+- [Issues](https://github.com/Cansiny0320/token-speed-tester/issues)
