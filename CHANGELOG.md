@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/Cansiny0320/token-speed-tester/compare/v1.2.1...v1.2.2) (2026-01-08)
+
+
+### Bug Fixes
+
+* combine workflows to publish npm after semantic-release ([c940890](https://github.com/Cansiny0320/token-speed-tester/commit/c9408902d147f96a96ebb94d1cbd7be75334bb69))
+
 ## [1.2.1](https://github.com/Cansiny0320/token-speed-tester/compare/v1.2.0...v1.2.1) (2026-01-08)
 
 
