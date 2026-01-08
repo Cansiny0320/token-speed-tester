@@ -180,6 +180,11 @@ export async function runMultipleTests(config: Config): Promise<StreamMetrics[]>
   const results: StreamMetrics[] = [];
 
   for (let i = 0; i < config.runCount; i++) {
+    if (config.runCount > 1) {
+      const label = `\n[运行 ${i + 1}/${config.runCount}]`;
+      console.log(label);
+      console.log("-".repeat(label.length - 1));
+    }
     const result = await streamTest(config);
     results.push(result);
   }
