@@ -1,11 +1,11 @@
 {
   "name": "token-speed-tester",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A CLI tool to test LLM API token output speed",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "token-speed-test": "./dist/index.js"
+    "token-speed-test": "dist/index.js"
   },
   "files": [
     "dist",
