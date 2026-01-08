@@ -35,8 +35,16 @@
     "openai",
     "cli"
   ],
-  "author": "",
+  "author": "Cansiny0320",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cansiny0320/token-speed-tester.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cansiny0320/token-speed-tester/issues"
+  },
+  "homepage": "https://github.com/Cansiny0320/token-speed-tester#readme",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
     "chalk": "^5.4.1",

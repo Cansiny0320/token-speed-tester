@@ -62,7 +62,7 @@ token-speed-test \
 
 ```bash
 # Clone and install dependencies
-git clone <repo-url>
+git clone https://github.com/Cansiny0320/token-speed-tester.git
 cd token-speed-tester
 npm install
 
