@@ -20,6 +20,16 @@ describe("tokenizer", () => {
     expect(tokenizer).toBe(mockEncoding);
   });
 
+  it("should use fallback encoding when model is empty", async () => {
+    const { encoding_for_model, get_encoding } = await import("tiktoken");
+
+    const tokenizer = createTokenizer("   ");
+
+    expect(encoding_for_model).not.toHaveBeenCalled();
+    expect(get_encoding).toHaveBeenCalledWith("cl100k_base");
+    expect(tokenizer).toBe(mockFallbackEncoding);
+  });
+
   it("should fall back to default encoding when model is unknown", async () => {
     const { encoding_for_model, get_encoding } = await import("tiktoken");
 
