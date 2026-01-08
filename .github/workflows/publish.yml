@@ -46,7 +46,7 @@ jobs:
 
       - name: Release
         id: release
-        uses: semantic-release/semantic-release@v4
+        uses: semantic-release/semantic-release@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: github-actions[bot]
