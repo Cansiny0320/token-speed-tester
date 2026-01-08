@@ -1,3 +1,9 @@
+## [1.4.2](https://github.com/Cansiny0320/token-speed-tester/compare/v1.4.1...v1.4.2) (2026-01-08)
+
+### Bug Fixes
+
+- read cli version from package.json ([d3c0b9b](https://github.com/Cansiny0320/token-speed-tester/commit/d3c0b9b468a51341015c70ac3aac7e81b3e1bace))
+
 ## [1.4.1](https://github.com/Cansiny0320/token-speed-tester/compare/v1.4.0...v1.4.1) (2026-01-08)
 
 ### Bug Fixes
