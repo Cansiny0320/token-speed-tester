@@ -224,16 +224,27 @@ npm run build
 
 ### 发布
 
+本项目使用 [semantic-release](https://github.com/semantic-release/semantic-release) 自动管理版本和发布。
+
+提交信息遵循 [约定式提交](https://www.conventionalcommits.org/zh-hans/) 规范：
+
 ```bash
-# 补丁版本发布 (1.0.3 -> 1.0.4)
-npm run release
+# 补丁版本 (1.0.0 -> 1.0.1)
+git commit -m "fix: 修复某个问题"
 
-# 次要版本发布 (1.0.3 -> 1.1.0)
-npm run release:minor
+# 次要版本 (1.0.0 -> 1.1.0)
+git commit -m "feat: 添加新功能"
 
-# 主要版本发布 (1.0.3 -> 2.0.0)
-npm run release:major
+# 主要版本 (1.0.0 -> 2.0.0)
+git commit -m "feat: 添加破坏性变更\n\nBREAKING CHANGE: 废弃旧 API"
 ```
+
+推送到 `master` 分支后，GitHub Actions 会自动：
+- 分析 commit 类型确定版本号
+- 更新 CHANGELOG.md
+- 创建 Git tag
+- 发布到 npm
+- 创建 GitHub Release
 
 ## 测试覆盖率
 
@@ -258,3 +269,4 @@ MIT © [Cansiny0320](https://github.com/Cansiny0320)
 - [npm 包](https://www.npmjs.com/package/token-speed-tester)
 - [GitHub 仓库](https://github.com/Cansiny0320/token-speed-tester)
 - [问题反馈](https://github.com/Cansiny0320/token-speed-tester/issues)
+- [更新日志](https://github.com/Cansiny0320/token-speed-tester/blob/master/CHANGELOG.md)

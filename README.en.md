@@ -224,16 +224,27 @@ npm run build
 
 ### Release
 
+This project uses [semantic-release](https://github.com/semantic-release/semantic-release) for automated versioning and publishing.
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
 ```bash
-# Patch release (1.0.3 -> 1.0.4)
-npm run release
+# Patch release (1.0.0 -> 1.0.1)
+git commit -m "fix: fix some bug"
 
-# Minor release (1.0.3 -> 1.1.0)
-npm run release:minor
+# Minor release (1.0.0 -> 1.1.0)
+git commit -m "feat: add new feature"
 
-# Major release (1.0.3 -> 2.0.0)
-npm run release:major
+# Major release (1.0.0 -> 2.0.0)
+git commit -m "feat: add breaking change\n\nBREAKING CHANGE: deprecate old API"
 ```
+
+After pushing to `master` branch, GitHub Actions will automatically:
+- Analyze commit types to determine version
+- Update CHANGELOG.md
+- Create Git tag
+- Publish to npm
+- Create GitHub Release
 
 ## Test Coverage
 
@@ -258,3 +269,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [npm Package](https://www.npmjs.com/package/token-speed-tester)
 - [GitHub Repository](https://github.com/Cansiny0320/token-speed-tester)
 - [Issues](https://github.com/Cansiny0320/token-speed-tester/issues)
+- [Changelog](https://github.com/Cansiny0320/token-speed-tester/blob/master/CHANGELOG.md)
