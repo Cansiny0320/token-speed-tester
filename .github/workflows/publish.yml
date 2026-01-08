@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
@@ -40,7 +41,15 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Get current version from npm
+        id: npm-version
+        continue-on-error: true
+        run: |
+          VERSION=$(npm view token-speed-tester version 2>/dev/null || echo "0.0.0")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Run semantic-release
+        id: release
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,3 +57,29 @@ jobs:
           GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+
+      - name: Get new version
+        id: new-version
+        run: |
+          # Fetch all tags from remote
+          git fetch --tags
+          # Get the latest tag
+          NEW_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "none")
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Publish to npm
+        if: steps.new-version.outputs.version != 'none' && steps.new-version.outputs.version != steps.npm-version.outputs.version
+        run: npm publish
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Create GitHub Release
+        if: steps.new-version.outputs.version != 'none' && steps.new-version.outputs.version != steps.npm-version.outputs.version
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.new-version.outputs.version }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
