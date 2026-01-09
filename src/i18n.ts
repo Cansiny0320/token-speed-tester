@@ -49,6 +49,26 @@ export interface Messages {
     peakSpeed: string;
     peakTps: string;
   };
+  htmlTitle: string;
+  htmlReportTitle: string;
+  htmlGenerated: (file: string) => string;
+  htmlOpenError: (file: string) => string;
+  htmlConfigSection: string;
+  htmlSummarySection: string;
+  htmlChartsSection: string;
+  htmlDetailsSection: string;
+  htmlTestTime: string;
+  htmlMetric: string;
+  htmlValue: string;
+  htmlRun: string;
+  htmlTokens: string;
+  htmlDuration: string;
+  htmlSpeed: string;
+  htmlTps: string;
+  htmlAverageTps: string;
+  htmlTpsDistribution: string;
+  htmlSpeedChartHover: string;
+  htmlTpsChartHover: string;
 }
 
 const zhMessages: Messages = {
@@ -97,6 +117,26 @@ const zhMessages: Messages = {
     peakSpeed: "峰值速度",
     peakTps: "峰值 TPS",
   },
+  htmlTitle: "Token 速度测试报告",
+  htmlReportTitle: "LLM API Token 流式性能测试报告",
+  htmlGenerated: (file: string) => `✓ HTML 报告已生成: ${file}`,
+  htmlOpenError: (file: string) => `无法自动打开报告，请手动打开: ${file}`,
+  htmlConfigSection: "测试配置",
+  htmlSummarySection: "统计汇总",
+  htmlChartsSection: "图表分析",
+  htmlDetailsSection: "详细数据",
+  htmlTestTime: "测试时间",
+  htmlMetric: "指标",
+  htmlValue: "数值",
+  htmlRun: "运行",
+  htmlTokens: "Token 数",
+  htmlDuration: "耗时",
+  htmlSpeed: "速度",
+  htmlTps: "TPS",
+  htmlAverageTps: "平均 TPS",
+  htmlTpsDistribution: "TPS 分布",
+  htmlSpeedChartHover: "秒",
+  htmlTpsChartHover: "次",
 };
 
 const enMessages: Messages = {
@@ -145,6 +185,26 @@ const enMessages: Messages = {
     peakSpeed: "Peak Speed",
     peakTps: "Peak TPS",
   },
+  htmlTitle: "Token Speed Test Report",
+  htmlReportTitle: "LLM API Token Streaming Performance Report",
+  htmlGenerated: (file: string) => `✓ HTML report generated: ${file}`,
+  htmlOpenError: (file: string) => `Could not auto-open report, please open manually: ${file}`,
+  htmlConfigSection: "Test Configuration",
+  htmlSummarySection: "Summary Statistics",
+  htmlChartsSection: "Chart Analysis",
+  htmlDetailsSection: "Detailed Data",
+  htmlTestTime: "Test Time",
+  htmlMetric: "Metric",
+  htmlValue: "Value",
+  htmlRun: "Run",
+  htmlTokens: "Tokens",
+  htmlDuration: "Duration",
+  htmlSpeed: "Speed",
+  htmlTps: "TPS",
+  htmlAverageTps: "Average TPS",
+  htmlTpsDistribution: "TPS Distribution",
+  htmlSpeedChartHover: "s",
+  htmlTpsChartHover: "count",
 };
 
 export function isSupportedLang(value: string): value is Lang {

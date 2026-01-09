@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFile } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import chalk from "chalk";
+import open from "open";
 import type { Provider } from "./config.js";
 import { parseConfig } from "./config.js";
 import { runMultipleTests } from "./client.js";
 import { calculateMetrics, calculateStats } from "./metrics.js";
 import { renderReport, renderSingleResult } from "./chart.js";
+import { generateHTMLReport } from "./html-report.js";
 import { DEFAULT_LANG, getMessages } from "./i18n.js";
 
 function getCliVersion(): string {
@@ -38,6 +40,7 @@ program
   .option("-r, --runs <number>", "Number of test runs", "3")
   .option("--prompt <text>", "Test prompt")
   .option("--lang <lang>", "Output language: zh or en", "zh")
+  .option("--html", "Generate HTML report")
   .parse(process.argv);
 
 const options = program.opts();
@@ -95,6 +98,31 @@ async function main() {
     console.log(chalk.cyan("\n" + renderReport(stats, config.lang)));
 
     console.log(chalk.green(`\n${messages.testComplete}\n`));
+
+    // 生成 HTML 报告
+    if (options.html) {
+      const htmlPath = "report.html";
+      const htmlContent = generateHTMLReport({
+        config,
+        singleResults: allMetrics,
+        stats,
+        lang: config.lang,
+        messages,
+      });
+
+      writeFile(htmlPath, htmlContent, "utf-8", (err) => {
+        if (err) {
+          console.error(chalk.red(`\n${messages.errorPrefix}: ${err.message}\n`));
+          return;
+        }
+        console.log(chalk.cyan(messages.htmlGenerated(htmlPath)));
+
+        // 自动打开浏览器
+        open(htmlPath).catch(() => {
+          console.warn(chalk.yellow(messages.htmlOpenError(htmlPath)));
+        });
+      });
+    }
   } catch (error) {
     if (error instanceof Error) {
       console.error(chalk.red(`\n${messages.errorPrefix}: ${error.message}\n`));
