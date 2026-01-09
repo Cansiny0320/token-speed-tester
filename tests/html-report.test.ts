@@ -84,6 +84,12 @@ describe("html-report", () => {
       peakTps: 4.37,
       tps: [],
     },
+    percentiles: {
+      ttft: { p50: 120, p95: 129, p99: 130 },
+      averageSpeed: { p50: 50, p95: 50, p99: 50 },
+      peakSpeed: { p50: 75, p95: 79, p99: 80 },
+      peakTps: { p50: 60, p95: 64, p99: 65 },
+    },
     sampleSize: 3,
   };
 
@@ -202,9 +208,11 @@ describe("html-report", () => {
       expect(result).toContain("<table");
       expect(result).toContain("TTFT");
       expect(result).toContain("均值");
+      expect(result).toContain("P50");
+      expect(result).toContain("P95");
+      expect(result).toContain("P99");
       expect(result).toContain("最小值");
       expect(result).toContain("最大值");
-      expect(result).toContain("标准差");
     });
 
     it("should include details table with single results", () => {
@@ -396,6 +404,12 @@ describe("html-report", () => {
           peakSpeed: 0,
           peakTps: 0,
           tps: [],
+        },
+        percentiles: {
+          ttft: { p50: 100, p95: 100, p99: 100 },
+          averageSpeed: { p50: 50, p95: 50, p99: 50 },
+          peakSpeed: { p50: 60, p95: 60, p99: 60 },
+          peakTps: { p50: 55, p95: 55, p99: 55 },
         },
         sampleSize: 1,
       };

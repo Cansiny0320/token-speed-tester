@@ -32,6 +32,9 @@ export interface Messages {
     min: string;
     max: string;
     stdDev: string;
+    p50: string;
+    p95: string;
+    p99: string;
   };
   statsLabels: {
     ttft: string;
@@ -100,6 +103,9 @@ const zhMessages: Messages = {
     min: "最小值",
     max: "最大值",
     stdDev: "标准差",
+    p50: "P50",
+    p95: "P95",
+    p99: "P99",
   },
   statsLabels: {
     ttft: "TTFT (ms)",
@@ -168,6 +174,9 @@ const enMessages: Messages = {
     min: "Min",
     max: "Max",
     stdDev: "Std Dev",
+    p50: "P50",
+    p95: "P95",
+    p99: "P99",
   },
   statsLabels: {
     ttft: "TTFT (ms)",

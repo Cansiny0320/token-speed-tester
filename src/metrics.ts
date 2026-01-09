@@ -22,6 +22,15 @@ export interface CalculatedMetrics {
 }
 
 /**
+ * 百分位数统计
+ */
+export interface PercentileMetrics {
+  p50: number; // 中位数
+  p95: number; // 95th 百分位
+  p99: number; // 99th 百分位
+}
+
+/**
  * 多次测试的统计结果
  */
 export interface StatsResult {
@@ -29,6 +38,12 @@ export interface StatsResult {
   min: CalculatedMetrics;
   max: CalculatedMetrics;
   stdDev: CalculatedMetrics;
+  percentiles: {
+    ttft: PercentileMetrics;
+    averageSpeed: PercentileMetrics;
+    peakSpeed: PercentileMetrics;
+    peakTps: PercentileMetrics;
+  };
   sampleSize: number;
 }
 
@@ -141,6 +156,44 @@ function standardDeviation(values: number[]): number {
 }
 
 /**
+ * 计算一组数值的百分位数
+ * @param values 已排序的数值数组
+ * @param p 百分位 (0-100)
+ */
+function calculatePercentile(values: number[], p: number): number {
+  if (values.length === 0) return 0;
+  if (values.length === 1) return values[0];
+
+  // 使用线性插值方法计算百分位数
+  const index = (p / 100) * (values.length - 1);
+  const lowerIndex = Math.floor(index);
+  const upperIndex = Math.ceil(index);
+  const fraction = index - lowerIndex;
+
+  if (lowerIndex === upperIndex) {
+    return values[lowerIndex];
+  }
+
+  return values[lowerIndex] + fraction * (values[upperIndex] - values[lowerIndex]);
+}
+
+/**
+ * 计算一组数值的多个百分位数
+ */
+export function calculatePercentiles(values: number[]): PercentileMetrics {
+  if (values.length === 0) {
+    return { p50: 0, p95: 0, p99: 0 };
+  }
+
+  const sorted = [...values].sort((a, b) => a - b);
+  return {
+    p50: calculatePercentile(sorted, 50),
+    p95: calculatePercentile(sorted, 95),
+    p99: calculatePercentile(sorted, 99),
+  };
+}
+
+/**
  * 从多个 CalculatedMetrics 计算统计结果
  */
 export function calculateStats(allMetrics: CalculatedMetrics[]): StatsResult {
@@ -202,6 +255,12 @@ export function calculateStats(allMetrics: CalculatedMetrics[]): StatsResult {
       peakSpeed: standardDeviation(peakSpeeds),
       peakTps: standardDeviation(peakTpsValues),
       tps: [],
+    },
+    percentiles: {
+      ttft: calculatePercentiles(ttfts),
+      averageSpeed: calculatePercentiles(averageSpeeds),
+      peakSpeed: calculatePercentiles(peakSpeeds),
+      peakTps: calculatePercentiles(peakTpsValues),
     },
     sampleSize,
   };

@@ -391,44 +391,56 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
     {
       metric: messages.statsLabels.ttft,
       mean: formatTime(stats.mean.ttft),
+      p50: formatTime(stats.percentiles.ttft.p50),
+      p95: formatTime(stats.percentiles.ttft.p95),
+      p99: formatTime(stats.percentiles.ttft.p99),
       min: formatTime(stats.min.ttft),
       max: formatTime(stats.max.ttft),
-      stdDev: formatTime(stats.stdDev.ttft),
     },
     {
       metric: messages.statsLabels.totalTime,
       mean: formatTime(stats.mean.totalTime),
+      p50: formatTime(stats.mean.totalTime),
+      p95: formatTime(stats.mean.totalTime),
+      p99: formatTime(stats.mean.totalTime),
       min: formatTime(stats.min.totalTime),
       max: formatTime(stats.max.totalTime),
-      stdDev: formatTime(stats.stdDev.totalTime),
     },
     {
       metric: messages.statsLabels.totalTokens,
       mean: formatNumber(stats.mean.totalTokens, 1),
+      p50: formatNumber(stats.mean.totalTokens, 0),
+      p95: formatNumber(stats.mean.totalTokens, 0),
+      p99: formatNumber(stats.mean.totalTokens, 0),
       min: formatNumber(stats.min.totalTokens, 0),
       max: formatNumber(stats.max.totalTokens, 0),
-      stdDev: formatNumber(stats.stdDev.totalTokens, 1),
     },
     {
       metric: messages.statsLabels.averageSpeed,
       mean: formatNumber(stats.mean.averageSpeed),
+      p50: formatNumber(stats.percentiles.averageSpeed.p50),
+      p95: formatNumber(stats.percentiles.averageSpeed.p95),
+      p99: formatNumber(stats.percentiles.averageSpeed.p99),
       min: formatNumber(stats.min.averageSpeed),
       max: formatNumber(stats.max.averageSpeed),
-      stdDev: formatNumber(stats.stdDev.averageSpeed),
     },
     {
       metric: messages.statsLabels.peakSpeed,
       mean: formatNumber(stats.mean.peakSpeed),
+      p50: formatNumber(stats.percentiles.peakSpeed.p50),
+      p95: formatNumber(stats.percentiles.peakSpeed.p95),
+      p99: formatNumber(stats.percentiles.peakSpeed.p99),
       min: formatNumber(stats.min.peakSpeed),
       max: formatNumber(stats.max.peakSpeed),
-      stdDev: formatNumber(stats.stdDev.peakSpeed),
     },
     {
       metric: messages.statsLabels.peakTps,
       mean: formatNumber(stats.mean.peakTps),
+      p50: formatNumber(stats.percentiles.peakTps.p50),
+      p95: formatNumber(stats.percentiles.peakTps.p95),
+      p99: formatNumber(stats.percentiles.peakTps.p99),
       min: formatNumber(stats.min.peakTps),
       max: formatNumber(stats.max.peakTps),
-      stdDev: formatNumber(stats.stdDev.peakTps),
     },
   ]
     .map(
@@ -436,9 +448,11 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
         <tr>
           <td class="metric-name">${row.metric}</td>
           <td class="value-primary">${row.mean}</td>
+          <td>${row.p50}</td>
+          <td>${row.p95}</td>
+          <td>${row.p99}</td>
           <td>${row.min}</td>
           <td>${row.max}</td>
-          <td>${row.stdDev}</td>
         </tr>
       `
     )
@@ -504,9 +518,11 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
             <tr>
               <th>${messages.statsHeaders.metric}</th>
               <th>${messages.statsHeaders.mean}</th>
+              <th>${messages.statsHeaders.p50}</th>
+              <th>${messages.statsHeaders.p95}</th>
+              <th>${messages.statsHeaders.p99}</th>
               <th>${messages.statsHeaders.min}</th>
               <th>${messages.statsHeaders.max}</th>
-              <th>${messages.statsHeaders.stdDev}</th>
             </tr>
           </thead>
           <tbody>
