@@ -22,6 +22,7 @@ A powerful command-line tool for testing token output speed of LLM APIs. Support
   - **TPS Curve**: Tokens received per second throughout the stream
 - **Statistical Analysis**: Mean, min, max, and standard deviation across multiple test runs
 - **ASCII Visualization**: Beautiful terminal-based charts and tables
+- **HTML Report**: Generate interactive HTML reports with SVG charts
 - **Custom Endpoints**: Test third-party APIs compatible with OpenAI/Anthropic protocols
 
 ## Installation
@@ -76,6 +77,20 @@ token-speed-test \
   --prompt "Explain quantum computing" \
   --max-tokens 2048 \
   --runs 10
+
+# Generate HTML report (with SVG charts)
+token-speed-test \
+  --api-key sk-ant-xxx \
+  --html \
+  --output my-report.html
+
+# Combined: Generate English HTML report
+token-speed-test \
+  --api-key sk-ant-xxx \
+  --runs 5 \
+  --html \
+  -o performance-report.html \
+  --lang en
 ```
 
 ### Local Development
@@ -106,6 +121,8 @@ node dist/index.js --api-key sk-ant-xxx
 | `--prompt`     |       | Test prompt                       | Language-specific         |
 | `--max-tokens` |       | Maximum output tokens             | `1024`                    |
 | `--lang`       |       | Output language: `zh` or `en`     | `zh`                      |
+| `--html`       |       | Generate HTML report              | `false`                   |
+| `--output`     | `-o`  | HTML report output path           | `report.html`             |
 
 Note: The default prompt follows the selected language. Use `--lang en` for the English default prompt.
 
@@ -169,6 +186,19 @@ TPS Distribution
 Tests complete!
 
 ```
+
+### HTML Report
+
+Use the `--html` option to generate a beautiful HTML report that includes:
+
+- **Speed Trend Chart**: Multi-run speed curves with SVG animations
+- **TPS Distribution**: Histogram of tokens per second
+- **Summary Cards**: Key metrics like TTFT, average speed, peak speed
+- **Detailed Data Table**: Complete data for each run
+- **Responsive Design**: Works on desktop and mobile devices
+- **Bilingual Support**: Automatically switches based on `--lang` setting
+
+The report will automatically open in your browser after generation.
 
 ## Metrics Explained
 
