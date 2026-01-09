@@ -5,6 +5,11 @@
 [Chinese README](README.md)
 
 [![npm version](https://badge.fury.io/js/token-speed-tester.svg)](https://www.npmjs.com/package/token-speed-tester)
+
+<p align="center">
+  <img src="./docs/images/html-report.png" alt="HTML Report Preview" width="800">
+</p>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/publish.yml/badge.svg)](https://github.com/Cansiny0320/token-speed-tester/actions)
 
