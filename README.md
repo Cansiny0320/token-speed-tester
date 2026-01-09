@@ -22,6 +22,7 @@
   - **TPS 曲线**：整个流式响应中每秒接收的 Token 数
 - **统计分析**：多次测试运行的均值、最小值、最大值和标准差
 - **ASCII 可视化**：精美的终端图表和数据表格
+- **HTML 报告**：生成包含 SVG 图表的交互式 HTML 报告
 - **自定义端点**：测试兼容 OpenAI/Anthropic 协议的第三方 API
 
 ## 安装
@@ -77,6 +78,20 @@ token-speed-test \
   --prompt "解释量子计算" \
   --max-tokens 2048 \
   --runs 10
+
+# 生成 HTML 报告（包含 SVG 图表）
+token-speed-test \
+  --api-key sk-ant-xxx \
+  --html \
+  --output my-report.html
+
+# 组合使用：生成英文 HTML 报告
+token-speed-test \
+  --api-key sk-ant-xxx \
+  --runs 5 \
+  --html \
+  -o performance-report.html \
+  --lang en
 ```
 
 ### 本地开发
@@ -107,6 +122,8 @@ node dist/index.js --api-key sk-ant-xxx
 | `--prompt`     |      | 测试提示词                        | "写一篇关于 AI 的短文" |
 | `--max-tokens` |      | 最大输出 Token 数                 | `1024`                 |
 | `--lang`       |      | 输出语言: `zh` 或 `en`            | `zh`                   |
+| `--html`       |      | 生成 HTML 报告                    | `false`                |
+| `--output`     | `-o` | HTML 报告输出路径                 | `report.html`          |
 
 ### 默认模型
 
@@ -200,6 +217,19 @@ TPS 分布
 
 ✅ 测试完成!
 ```
+
+### HTML 报告
+
+使用 `--html` 选项可以生成精美的 HTML 报告，报告包含：
+
+- **速度趋势图**：多条运行的速度曲线对比（SVG 动画）
+- **TPS 分布图**：每秒 Token 数的直方图
+- **统计汇总卡片**：TTFT、平均速度、峰值速度等核心指标
+- **详细数据表格**：每次运行的完整数据
+- **响应式设计**：支持桌面和移动设备
+- **中英文支持**：根据 `--lang` 自动切换
+
+报告生成后会自动在浏览器中打开。
 
 ## 指标说明
 
