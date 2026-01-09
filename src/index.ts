@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { readFileSync, writeFile } from "node:fs";
+import { readFileSync } from "node:fs";
+import { writeFile as fsWriteFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Command } from "commander";
@@ -41,6 +42,7 @@ program
   .option("--prompt <text>", "Test prompt")
   .option("--lang <lang>", "Output language: zh or en", "zh")
   .option("--html", "Generate HTML report")
+  .option("-o, --output <path>", "HTML report output path", "report.html")
   .parse(process.argv);
 
 const options = program.opts();
@@ -101,7 +103,7 @@ async function main() {
 
     // 生成 HTML 报告
     if (options.html) {
-      const htmlPath = "report.html";
+      const htmlPath = options.output;
       const htmlContent = generateHTMLReport({
         config,
         singleResults: allMetrics,
@@ -110,18 +112,21 @@ async function main() {
         messages,
       });
 
-      writeFile(htmlPath, htmlContent, "utf-8", (err) => {
-        if (err) {
-          console.error(chalk.red(`\n${messages.errorPrefix}: ${err.message}\n`));
-          return;
-        }
+      try {
+        await fsWriteFile(htmlPath, htmlContent, "utf-8");
         console.log(chalk.cyan(messages.htmlGenerated(htmlPath)));
 
         // 自动打开浏览器
-        open(htmlPath).catch(() => {
+        await open(htmlPath).catch(() => {
           console.warn(chalk.yellow(messages.htmlOpenError(htmlPath)));
         });
-      });
+      } catch (err) {
+        console.error(
+          chalk.red(
+            `\n${messages.errorPrefix}: ${err instanceof Error ? err.message : String(err)}\n`
+          )
+        );
+      }
     }
   } catch (error) {
     if (error instanceof Error) {

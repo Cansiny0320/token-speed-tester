@@ -67,7 +67,7 @@ export interface Messages {
   htmlTps: string;
   htmlAverageTps: string;
   htmlTpsDistribution: string;
-  htmlSpeedChartHover: string;
+  htmlTimeUnit: string;
   htmlTpsChartHover: string;
 }
 
@@ -135,7 +135,7 @@ const zhMessages: Messages = {
   htmlTps: "TPS",
   htmlAverageTps: "平均 TPS",
   htmlTpsDistribution: "TPS 分布",
-  htmlSpeedChartHover: "秒",
+  htmlTimeUnit: "秒",
   htmlTpsChartHover: "次",
 };
 
@@ -203,7 +203,7 @@ const enMessages: Messages = {
   htmlTps: "TPS",
   htmlAverageTps: "Average TPS",
   htmlTpsDistribution: "TPS Distribution",
-  htmlSpeedChartHover: "s",
+  htmlTimeUnit: "s",
   htmlTpsChartHover: "count",
 };
 

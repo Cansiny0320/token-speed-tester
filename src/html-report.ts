@@ -193,7 +193,7 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
     const x = padding.left + (i / Math.max(xSteps - 1, 1)) * chartWidth;
     const label = i.toString();
     xLabels.push(
-      `<text x="${x}" y="${height - padding.bottom + 20}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlSpeedChartHover}</text>`
+      `<text x="${x}" y="${height - padding.bottom + 20}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlTimeUnit}</text>`
     );
   }
 
@@ -219,7 +219,7 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
         opacity="0.7"
         points="${avgPoints.trim()}"
       />
-      <text x="${padding.left + chartWidth / 2}" y="${height - 8}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">TIME (${messages.htmlSpeedChartHover})</text>
+      <text x="${padding.left + chartWidth / 2}" y="${height - 8}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">TIME (${messages.htmlTimeUnit})</text>
       <text x="12" y="${padding.top + chartHeight / 2}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}" transform="rotate(-90, 12, ${padding.top + chartHeight / 2})">TPS</text>
     </svg>
     <div class="chart-legend">
@@ -316,7 +316,7 @@ function generateTPSHistogram(stats: StatsResult, messages: Messages): string {
     const x = padding.left + (i / Math.max(xSteps - 1, 1)) * chartWidth;
     const label = i.toString();
     xLabels.push(
-      `<text x="${x}" y="${height - padding.bottom + 18}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlSpeedChartHover}</text>`
+      `<text x="${x}" y="${height - padding.bottom + 18}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlTimeUnit}</text>`
     );
   }
 
