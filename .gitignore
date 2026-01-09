@@ -33,3 +33,7 @@ coverage/
 # Temporary files
 *.tmp
 .temp/
+
+# HTML report output
+*.html
+!src/**/*.html
