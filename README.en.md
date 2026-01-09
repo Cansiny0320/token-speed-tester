@@ -85,14 +85,26 @@ token-speed-test \
 # Generate HTML report (with SVG charts)
 token-speed-test \
   --api-key sk-ant-xxx \
-  --html \
+  --output-format html \
   --output my-report.html
+
+# Generate JSON report
+token-speed-test \
+  --api-key sk-ant-xxx \
+  --output-format json \
+  --output report.json
+
+# Generate CSV report
+token-speed-test \
+  --api-key sk-ant-xxx \
+  --output-format csv \
+  --output report.csv
 
 # Combined: Generate English HTML report
 token-speed-test \
   --api-key sk-ant-xxx \
   --runs 5 \
-  --html \
+  --output-format html \
   -o performance-report.html \
   --lang en
 ```
@@ -115,18 +127,18 @@ node dist/index.js --api-key sk-ant-xxx
 
 ## Command Line Options
 
-| Option         | Short | Description                       | Default                   |
-| -------------- | ----- | --------------------------------- | ------------------------- |
-| `--api-key`    | `-k`  | API Key (required)                | -                         |
-| `--provider`   | `-p`  | API type: `anthropic` or `openai` | `anthropic`               |
-| `--model`      | `-m`  | Model name                        | Auto-selected by provider |
-| `--url`        | `-u`  | Custom API endpoint               | Official endpoint         |
-| `--runs`       | `-r`  | Number of test runs               | `3`                       |
-| `--prompt`     |       | Test prompt                       | Language-specific         |
-| `--max-tokens` |       | Maximum output tokens             | `1024`                    |
-| `--lang`       |       | Output language: `zh` or `en`     | `zh`                      |
-| `--html`       |       | Generate HTML report              | `false`                   |
-| `--output`     | `-o`  | HTML report output path           | `report.html`             |
+| Option            | Short | Description                                   | Default                   |
+| ----------------- | ----- | --------------------------------------------- | ------------------------- |
+| `--api-key`       | `-k`  | API Key (required)                            | -                         |
+| `--provider`      | `-p`  | API type: `anthropic` or `openai`             | `anthropic`               |
+| `--model`         | `-m`  | Model name                                    | Auto-selected by provider |
+| `--url`           | `-u`  | Custom API endpoint                           | Official endpoint         |
+| `--runs`          | `-r`  | Number of test runs                           | `3`                       |
+| `--prompt`        |       | Test prompt                                   | Language-specific         |
+| `--max-tokens`    |       | Maximum output tokens                         | `1024`                    |
+| `--lang`          |       | Output language: `zh` or `en`                 | `zh`                      |
+| `--output-format` | `-f`  | Output format: `terminal`/`json`/`csv`/`html` | `terminal`                |
+| `--output`        | `-o`  | Output file path (default `report.{ext}`)     | `report.{ext}`            |
 
 Note: The default prompt follows the selected language. Use `--lang en` for the English default prompt.
 
@@ -193,7 +205,7 @@ Tests complete!
 
 ### HTML Report
 
-Use the `--html` option to generate a beautiful HTML report that includes:
+Use the `--output-format html` option to generate a beautiful HTML report that includes:
 
 - **Speed Trend Chart**: Multi-run speed curves with SVG animations
 - **TPS Distribution**: Histogram of tokens per second

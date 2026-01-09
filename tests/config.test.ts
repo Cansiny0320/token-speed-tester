@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseConfig, getDefaultModel, validateConfig } from "../src/config.js";
-import type { Provider, Config } from "../src/config.js";
+import type { Provider, Config, OutputFormat } from "../src/config.js";
 
 describe("config", () => {
   const VALID_API_KEY = "sk-test-api-key-12345";
@@ -244,6 +244,8 @@ describe("config", () => {
         runCount: 10,
         prompt: "Write a story",
         lang: "en",
+        outputFormat: "terminal",
+        outputPath: "report",
       });
     });
 
@@ -285,6 +287,8 @@ describe("config", () => {
       runCount: 3,
       prompt: "Test prompt",
       lang: "zh",
+      outputFormat: "terminal",
+      outputPath: "report",
     };
 
     it("should validate a correct config", () => {
@@ -401,6 +405,24 @@ describe("config", () => {
       expect(result.error).toBe("prompt cannot be empty");
     });
 
+    it("should reject config with invalid outputFormat", () => {
+      const result = validateConfig({
+        ...validConfig,
+        outputFormat: "xml" as OutputFormat,
+      });
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("Invalid outputFormat");
+    });
+
+    it("should reject config with empty outputPath", () => {
+      const result = validateConfig({
+        ...validConfig,
+        outputPath: " ",
+      });
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe("outputPath cannot be empty");
+    });
+
     it("should accept config with custom baseURL", () => {
       const result = validateConfig({
         ...validConfig,
@@ -418,6 +440,8 @@ describe("config", () => {
         runCount: 3,
         prompt: "Test",
         lang: "zh",
+        outputFormat: "terminal",
+        outputPath: "report",
       };
       const result = validateConfig(configWithoutURL);
       expect(result.valid).toBe(true);
@@ -432,6 +456,8 @@ describe("config", () => {
         runCount: 3,
         prompt: "Test",
         lang: "zh",
+        outputFormat: "terminal",
+        outputPath: "report",
       };
       const result = validateConfig(openaiConfig);
       expect(result.valid).toBe(true);

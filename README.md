@@ -86,14 +86,26 @@ token-speed-test \
 # 生成 HTML 报告（包含 SVG 图表）
 token-speed-test \
   --api-key sk-ant-xxx \
-  --html \
+  --output-format html \
   --output my-report.html
+
+# 生成 JSON 报告
+token-speed-test \
+  --api-key sk-ant-xxx \
+  --output-format json \
+  --output report.json
+
+# 生成 CSV 报告
+token-speed-test \
+  --api-key sk-ant-xxx \
+  --output-format csv \
+  --output report.csv
 
 # 组合使用：生成英文 HTML 报告
 token-speed-test \
   --api-key sk-ant-xxx \
   --runs 5 \
-  --html \
+  --output-format html \
   -o performance-report.html \
   --lang en
 ```
@@ -116,18 +128,18 @@ node dist/index.js --api-key sk-ant-xxx
 
 ## 命令行选项
 
-| 选项           | 简写 | 说明                              | 默认值                 |
-| -------------- | ---- | --------------------------------- | ---------------------- |
-| `--api-key`    | `-k` | API Key（必填）                   | -                      |
-| `--provider`   | `-p` | API 类型：`anthropic` 或 `openai` | `anthropic`            |
-| `--model`      | `-m` | 模型名称                          | 根据提供商自动选择     |
-| `--url`        | `-u` | 自定义 API 端点                   | 官方端点               |
-| `--runs`       | `-r` | 测试次数                          | `3`                    |
-| `--prompt`     |      | 测试提示词                        | "写一篇关于 AI 的短文" |
-| `--max-tokens` |      | 最大输出 Token 数                 | `1024`                 |
-| `--lang`       |      | 输出语言: `zh` 或 `en`            | `zh`                   |
-| `--html`       |      | 生成 HTML 报告                    | `false`                |
-| `--output`     | `-o` | HTML 报告输出路径                 | `report.html`          |
+| 选项              | 简写 | 说明                                     | 默认值                 |
+| ----------------- | ---- | ---------------------------------------- | ---------------------- |
+| `--api-key`       | `-k` | API Key（必填）                          | -                      |
+| `--provider`      | `-p` | API 类型：`anthropic` 或 `openai`        | `anthropic`            |
+| `--model`         | `-m` | 模型名称                                 | 根据提供商自动选择     |
+| `--url`           | `-u` | 自定义 API 端点                          | 官方端点               |
+| `--runs`          | `-r` | 测试次数                                 | `3`                    |
+| `--prompt`        |      | 测试提示词                               | "写一篇关于 AI 的短文" |
+| `--max-tokens`    |      | 最大输出 Token 数                        | `1024`                 |
+| `--lang`          |      | 输出语言: `zh` 或 `en`                   | `zh`                   |
+| `--output-format` | `-f` | 输出格式：`terminal`/`json`/`csv`/`html` | `terminal`             |
+| `--output`        | `-o` | 输出文件路径（默认 `report.{ext}`）      | `report.{ext}`         |
 
 ### 默认模型
 
@@ -224,7 +236,7 @@ TPS 分布
 
 ### HTML 报告
 
-使用 `--html` 选项可以生成精美的 HTML 报告，报告包含：
+使用 `--output-format html` 选项可以生成精美的 HTML 报告，报告包含：
 
 - **速度趋势图**：多条运行的速度曲线对比（SVG 动画）
 - **TPS 分布图**：每秒 Token 数的直方图
