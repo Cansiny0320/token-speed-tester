@@ -95,24 +95,24 @@ export function generateJSONExport(
       },
       p50: {
         ttft: Math.round(stats.percentiles.ttft.p50 * 100) / 100,
-        totalTime: Math.round(stats.mean.totalTime * 100) / 100,
-        totalTokens: Math.round(stats.mean.totalTokens * 100) / 100,
+        totalTime: Math.round(stats.percentiles.totalTime.p50 * 100) / 100,
+        totalTokens: Math.round(stats.percentiles.totalTokens.p50 * 100) / 100,
         averageSpeed: Math.round(stats.percentiles.averageSpeed.p50 * 100) / 100,
         peakSpeed: Math.round(stats.percentiles.peakSpeed.p50 * 100) / 100,
         peakTps: Math.round(stats.percentiles.peakTps.p50 * 100) / 100,
       },
       p95: {
         ttft: Math.round(stats.percentiles.ttft.p95 * 100) / 100,
-        totalTime: Math.round(stats.mean.totalTime * 100) / 100,
-        totalTokens: Math.round(stats.mean.totalTokens * 100) / 100,
+        totalTime: Math.round(stats.percentiles.totalTime.p95 * 100) / 100,
+        totalTokens: Math.round(stats.percentiles.totalTokens.p95 * 100) / 100,
         averageSpeed: Math.round(stats.percentiles.averageSpeed.p95 * 100) / 100,
         peakSpeed: Math.round(stats.percentiles.peakSpeed.p95 * 100) / 100,
         peakTps: Math.round(stats.percentiles.peakTps.p95 * 100) / 100,
       },
       p99: {
         ttft: Math.round(stats.percentiles.ttft.p99 * 100) / 100,
-        totalTime: Math.round(stats.mean.totalTime * 100) / 100,
-        totalTokens: Math.round(stats.mean.totalTokens * 100) / 100,
+        totalTime: Math.round(stats.percentiles.totalTime.p99 * 100) / 100,
+        totalTokens: Math.round(stats.percentiles.totalTokens.p99 * 100) / 100,
         averageSpeed: Math.round(stats.percentiles.averageSpeed.p99 * 100) / 100,
         peakSpeed: Math.round(stats.percentiles.peakSpeed.p99 * 100) / 100,
         peakTps: Math.round(stats.percentiles.peakTps.p99 * 100) / 100,
@@ -149,10 +149,10 @@ export function generateCSVExport(
     `TTFT (ms),${stats.mean.ttft.toFixed(2)},${stats.percentiles.ttft.p50.toFixed(2)},${stats.percentiles.ttft.p95.toFixed(2)},${stats.percentiles.ttft.p99.toFixed(2)},${stats.min.ttft.toFixed(2)},${stats.max.ttft.toFixed(2)}`
   );
   lines.push(
-    `Total Time (ms),${stats.mean.totalTime.toFixed(2)},${stats.mean.totalTime.toFixed(2)},${stats.mean.totalTime.toFixed(2)},${stats.mean.totalTime.toFixed(2)},${stats.min.totalTime.toFixed(2)},${stats.max.totalTime.toFixed(2)}`
+    `Total Time (ms),${stats.mean.totalTime.toFixed(2)},${stats.percentiles.totalTime.p50.toFixed(2)},${stats.percentiles.totalTime.p95.toFixed(2)},${stats.percentiles.totalTime.p99.toFixed(2)},${stats.min.totalTime.toFixed(2)},${stats.max.totalTime.toFixed(2)}`
   );
   lines.push(
-    `Total Tokens,${stats.mean.totalTokens.toFixed(2)},${stats.mean.totalTokens.toFixed(2)},${stats.mean.totalTokens.toFixed(2)},${stats.mean.totalTokens.toFixed(2)},${stats.min.totalTokens},${stats.max.totalTokens}`
+    `Total Tokens,${stats.mean.totalTokens.toFixed(2)},${stats.percentiles.totalTokens.p50.toFixed(2)},${stats.percentiles.totalTokens.p95.toFixed(2)},${stats.percentiles.totalTokens.p99.toFixed(2)},${stats.min.totalTokens},${stats.max.totalTokens}`
   );
   lines.push(
     `Average Speed (tokens/s),${stats.mean.averageSpeed.toFixed(2)},${stats.percentiles.averageSpeed.p50.toFixed(2)},${stats.percentiles.averageSpeed.p95.toFixed(2)},${stats.percentiles.averageSpeed.p99.toFixed(2)},${stats.min.averageSpeed.toFixed(2)},${stats.max.averageSpeed.toFixed(2)}`

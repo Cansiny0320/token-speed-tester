@@ -88,6 +88,8 @@ describe("html-report", () => {
     },
     percentiles: {
       ttft: { p50: 120, p95: 129, p99: 130 },
+      totalTime: { p50: 2500, p95: 2680, p99: 2695 },
+      totalTokens: { p50: 125, p95: 134, p99: 134.8 },
       averageSpeed: { p50: 50, p95: 50, p99: 50 },
       peakSpeed: { p50: 75, p95: 79, p99: 80 },
       peakTps: { p50: 60, p95: 64, p99: 65 },
@@ -409,6 +411,8 @@ describe("html-report", () => {
         },
         percentiles: {
           ttft: { p50: 100, p95: 100, p99: 100 },
+          totalTime: { p50: 1000, p95: 1000, p99: 1000 },
+          totalTokens: { p50: 50, p95: 50, p99: 50 },
           averageSpeed: { p50: 50, p95: 50, p99: 50 },
           peakSpeed: { p50: 60, p95: 60, p99: 60 },
           peakTps: { p50: 55, p95: 55, p99: 55 },

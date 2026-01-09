@@ -85,6 +85,8 @@ describe("export", () => {
     },
     percentiles: {
       ttft: { p50: 120, p95: 147, p99: 149 },
+      totalTime: { p50: 2200, p95: 2450, p99: 2490 },
+      totalTokens: { p50: 110, p95: 123, p99: 124.8 },
       averageSpeed: { p50: 50, p95: 50, p99: 50 },
       peakSpeed: { p50: 75, p95: 79, p99: 80 },
       peakTps: { p50: 65, p95: 69, p99: 70 },

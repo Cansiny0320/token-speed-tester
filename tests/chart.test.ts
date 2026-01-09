@@ -48,6 +48,8 @@ describe("chart", () => {
     },
     percentiles: {
       ttft: { p50: 150, p95: 195, p99: 198 },
+      totalTime: { p50: 2500, p95: 2950, p99: 2990 },
+      totalTokens: { p50: 125, p95: 148, p99: 149.5 },
       averageSpeed: { p50: 50, p95: 54, p99: 55 },
       peakSpeed: { p50: 75, p95: 88, p99: 89 },
       peakTps: { p50: 60, p95: 78, p99: 79 },
@@ -398,6 +400,8 @@ describe("chart", () => {
         },
         percentiles: {
           ttft: { p50: 0, p95: 0, p99: 0 },
+          totalTime: { p50: 0, p95: 0, p99: 0 },
+          totalTokens: { p50: 0, p95: 0, p99: 0 },
           averageSpeed: { p50: 0, p95: 0, p99: 0 },
           peakSpeed: { p50: 0, p95: 0, p99: 0 },
           peakTps: { p50: 0, p95: 0, p99: 0 },
@@ -448,6 +452,8 @@ describe("chart", () => {
         },
         percentiles: {
           ttft: { p50: 5000, p95: 5800, p99: 5940 },
+          totalTime: { p50: 50000, p95: 59000, p99: 59800 },
+          totalTokens: { p50: 10000, p95: 11800, p99: 11960 },
           averageSpeed: { p50: 200, p95: 218, p99: 222 },
           peakSpeed: { p50: 500, p95: 545, p99: 554 },
           peakTps: { p50: 350, p95: 395, p99: 399 },
