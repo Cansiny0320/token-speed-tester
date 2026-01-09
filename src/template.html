@@ -645,9 +645,14 @@
         return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       }
 
-      // Apply theme to document
+      // Apply theme to document without persisting
       function applyTheme(theme) {
         html.setAttribute('data-theme', theme);
+      }
+
+      // Persist user-selected theme
+      function persistTheme(theme) {
+        applyTheme(theme);
         localStorage.setItem('theme', theme);
       }
 
@@ -655,7 +660,7 @@
       function toggleTheme() {
         const current = html.getAttribute('data-theme') || 'dark';
         const next = current === 'light' ? 'dark' : 'light';
-        applyTheme(next);
+        persistTheme(next);
       }
 
       // Initialize theme
