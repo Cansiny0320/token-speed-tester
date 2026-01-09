@@ -15,6 +15,8 @@ describe("html-report", () => {
     maxTokens: 1024,
     prompt: "Test prompt",
     lang: "zh",
+    outputFormat: "html",
+    outputPath: "report.html",
   };
 
   const mockSingleResults: CalculatedMetrics[] = [

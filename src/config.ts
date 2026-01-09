@@ -1,6 +1,7 @@
 import { getMessages, resolveLang, type Lang } from "./i18n.js";
 
 export type Provider = "anthropic" | "openai";
+export type OutputFormat = "terminal" | "json" | "csv" | "html";
 
 export interface Config {
   provider: Provider;
@@ -11,6 +12,8 @@ export interface Config {
   runCount: number;
   prompt: string;
   lang: Lang;
+  outputFormat: OutputFormat;
+  outputPath: string;
 }
 
 export interface ParsedArgs {
@@ -22,6 +25,8 @@ export interface ParsedArgs {
   runs?: number;
   prompt?: string;
   lang?: string;
+  outputFormat?: OutputFormat;
+  outputPath?: string;
 }
 
 const DEFAULT_MODELS: Record<Provider, string> = {
@@ -44,6 +49,8 @@ export function parseConfig(args: ParsedArgs): Config {
     runs = DEFAULT_RUNS,
     prompt,
     lang: langInput,
+    outputFormat = "terminal",
+    outputPath,
   } = args;
   const lang = resolveLang(langInput);
   const messages = getMessages(lang);
@@ -68,8 +75,27 @@ export function parseConfig(args: ParsedArgs): Config {
     throw new Error(`Invalid runs: ${runs}. Must be a positive integer.`);
   }
 
+  // 验证输出格式
+  if (outputFormat && !["terminal", "json", "csv", "html"].includes(outputFormat)) {
+    throw new Error(
+      `Invalid output-format: ${outputFormat}. Must be 'terminal', 'json', 'csv', or 'html'.`
+    );
+  }
+
   // 使用默认模型或用户指定的模型
   const finalModel = model || DEFAULT_MODELS[provider];
+
+  // 确定输出路径
+  let finalOutputPath = "report";
+  if (outputPath) {
+    finalOutputPath = outputPath;
+  } else if (outputFormat === "html") {
+    finalOutputPath = "report.html";
+  } else if (outputFormat === "json") {
+    finalOutputPath = "report.json";
+  } else if (outputFormat === "csv") {
+    finalOutputPath = "report.csv";
+  }
 
   return {
     provider,
@@ -80,6 +106,8 @@ export function parseConfig(args: ParsedArgs): Config {
     runCount: runs,
     prompt: finalPrompt.trim(),
     lang,
+    outputFormat,
+    outputPath: finalOutputPath,
   };
 }
 
@@ -126,6 +154,13 @@ export function validateConfig(config: Config): { valid: boolean; error?: string
     return { valid: false, error: `Invalid lang: ${config.lang}` };
   }
 
+  if (!["terminal", "json", "csv", "html"].includes(config.outputFormat)) {
+    return { valid: false, error: `Invalid outputFormat: ${config.outputFormat}` };
+  }
+
+  if (!config.outputPath || config.outputPath.trim() === "") {
+    return { valid: false, error: "outputPath cannot be empty" };
+  }
+
   return { valid: true };
 }
-// test

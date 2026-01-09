@@ -65,6 +65,8 @@ const mockConfig: Config = {
   prompt: "Test",
   lang: "zh",
   baseURL: "https://api.test.com",
+  outputFormat: "terminal",
+  outputPath: "report",
 };
 
 describe("client", () => {
