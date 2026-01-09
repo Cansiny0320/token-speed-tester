@@ -54,13 +54,13 @@ npm install token-speed-tester
 ### 基本用法
 
 ```bash
-# 测试 Anthropic API（默认）
-token-speed-test --api-key sk-ant-xxx
+# 测试 OpenAI API（默认）
+token-speed-test --api-key sk-xxx
 # 输出英文结果
-token-speed-test --api-key sk-ant-xxx --lang en
+token-speed-test --api-key sk-xxx --lang en
 
-# 测试 OpenAI API
-token-speed-test --api-key sk-xxx --provider openai
+# 测试 Anthropic API
+token-speed-test --api-key sk-ant-xxx --provider anthropic
 ```
 
 ### 高级选项
@@ -131,7 +131,7 @@ node dist/index.js --api-key sk-ant-xxx
 | 选项              | 简写 | 说明                                     | 默认值                 |
 | ----------------- | ---- | ---------------------------------------- | ---------------------- |
 | `--api-key`       | `-k` | API Key（必填）                          | -                      |
-| `--provider`      | `-p` | API 类型：`anthropic` 或 `openai`        | `anthropic`            |
+| `--provider`      | `-p` | API 类型：`anthropic` 或 `openai`        | `openai`               |
 | `--model`         | `-m` | 模型名称                                 | 根据提供商自动选择     |
 | `--url`           | `-u` | 自定义 API 端点                          | 官方端点               |
 | `--runs`          | `-r` | 测试次数                                 | `3`                    |
@@ -151,8 +151,8 @@ node dist/index.js --api-key sk-ant-xxx
 ```
 🚀 Token 速度测试工具
 ──────────────────────────────────────────
-Provider: anthropic
-Model: claude-opus-4-5-20251101
+Provider: openai
+Model: gpt-5.2
 Max Tokens: 1024
 Runs: 3
 Prompt: 写一篇关于 AI 的短文

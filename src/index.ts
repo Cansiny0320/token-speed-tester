@@ -35,7 +35,7 @@ program
 
 program
   .option("-k, --api-key <key>", "API Key (required)", "")
-  .option("-p, --provider <provider>", "API provider: anthropic or openai", "anthropic")
+  .option("-p, --provider <provider>", "API provider: anthropic or openai", "openai")
   .option("-u, --url <url>", "Custom API endpoint URL")
   .option("-m, --model <model>", "Model name")
   .option("--max-tokens <number>", "Maximum output tokens", "1024")
