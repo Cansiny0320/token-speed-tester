@@ -206,14 +206,14 @@ export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG):
   );
   lines.push("├" + "─".repeat(tableWidth) + "┤");
 
-  // 总耗时 (note: totalTime doesn't have percentiles, use min/max as fallback)
+  // 总耗时
   lines.push(
     formatStatRow(
       messages.statsLabels.totalTime,
       stats.mean.totalTime,
-      stats.mean.totalTime, // fallback for p50
-      stats.mean.totalTime, // fallback for p95
-      stats.mean.totalTime, // fallback for p99
+      stats.percentiles.totalTime.p50,
+      stats.percentiles.totalTime.p95,
+      stats.percentiles.totalTime.p99,
       stats.min.totalTime,
       stats.max.totalTime,
       "f"
@@ -221,14 +221,14 @@ export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG):
   );
   lines.push("├" + "─".repeat(tableWidth) + "┤");
 
-  // 总 token 数 (note: totalTokens doesn't have percentiles, use min/max as fallback)
+  // 总 token 数
   lines.push(
     formatStatRow(
       messages.statsLabels.totalTokens,
       stats.mean.totalTokens,
-      stats.mean.totalTokens, // fallback for p50
-      stats.mean.totalTokens, // fallback for p95
-      stats.mean.totalTokens, // fallback for p99
+      stats.percentiles.totalTokens.p50,
+      stats.percentiles.totalTokens.p95,
+      stats.percentiles.totalTokens.p99,
       stats.min.totalTokens,
       stats.max.totalTokens,
       "f"
