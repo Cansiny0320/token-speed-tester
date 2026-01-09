@@ -4,7 +4,7 @@
 
 [English](README.en.md)
 
-[![npm 版本](https://badge.fury.io/js/token-speed-tester.svg)](https://www.npmjs.com/package/token-speed-tester)
+[![npm version](https://img.shields.io/npm/v/token-speed-tester)](https://www.npmjs.com/package/token-speed-tester)
 [![开源协议](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![测试](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/publish.yml/badge.svg)](https://github.com/Cansiny0320/token-speed-tester/actions)
 
