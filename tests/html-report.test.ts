@@ -441,6 +441,35 @@ describe("html-report", () => {
       expect(result).toContain("max-width: 1024px");
       expect(result).toContain("max-width: 640px");
     });
+
+    it("should include theme toggle button and styles", () => {
+      const messages = getMessages("zh");
+      const result = generateHTMLReport({
+        config: mockConfig,
+        singleResults: mockSingleResults,
+        stats: mockStats,
+        lang: "zh",
+        messages,
+      });
+
+      // Should include theme toggle button
+      expect(result).toContain("theme-toggle");
+      expect(result).toContain('id="themeToggle"');
+      expect(result).toContain('aria-label="Toggle theme"');
+
+      // Should include sun and moon icons
+      expect(result).toContain("moon-icon");
+      expect(result).toContain("sun-icon");
+
+      // Should include light theme CSS variables
+      expect(result).toContain('[data-theme="light"]');
+      expect(result).toContain("--scan-line-opacity");
+      expect(result).toContain("--grid-line-opacity");
+
+      // Should include theme toggle script
+      expect(result).toContain("localStorage.getItem('theme')");
+      expect(result).toContain("prefers-color-scheme");
+    });
   });
 
   describe("i18n message functions", () => {
