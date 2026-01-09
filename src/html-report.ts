@@ -55,10 +55,7 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }
 
-function generateSpeedChart(
-  results: CalculatedMetrics[],
-  messages: Messages
-): string {
+function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): string {
   const allTps = results.flatMap((r) => r.tps);
   if (allTps.length === 0) {
     return `<div class="no-data">${messages.noChartData || "No data available"}</div>`;
@@ -80,20 +77,21 @@ function generateSpeedChart(
   }
 
   // Generate polylines and gradients for each run
-  const polylines = results.map((result, idx) => {
-    const color = CHART_COLORS[idx % CHART_COLORS.length];
-    let points = "";
-    let areaPoints = `${padding.left},${height - padding.bottom} `;
+  const polylines = results
+    .map((result, idx) => {
+      const color = CHART_COLORS[idx % CHART_COLORS.length];
+      let points = "";
+      let areaPoints = `${padding.left},${height - padding.bottom} `;
 
-    result.tps.forEach((tps, i) => {
-      const x = padding.left + (i / Math.max(maxDuration - 1, 1)) * chartWidth;
-      const y = padding.top + chartHeight - (tps / maxTps) * chartHeight;
-      points += `${x},${y} `;
-      areaPoints += `${x},${y} `;
-    });
-    areaPoints += `${padding.left + chartWidth},${height - padding.bottom}`;
+      result.tps.forEach((tps, i) => {
+        const x = padding.left + (i / Math.max(maxDuration - 1, 1)) * chartWidth;
+        const y = padding.top + chartHeight - (tps / maxTps) * chartHeight;
+        points += `${x},${y} `;
+        areaPoints += `${x},${y} `;
+      });
+      areaPoints += `${padding.left + chartWidth},${height - padding.bottom}`;
 
-    return `
+      return `
       <defs>
         <linearGradient id="grad-${idx}" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" style="stop-color:${color};stop-opacity:0.3"/>
@@ -123,15 +121,18 @@ function generateSpeedChart(
           keySplines="0.4 0 0.2 1"
         />
       </polyline>
-      ${result.tps.map((tps, i) => {
-        const x = padding.left + (i / Math.max(maxDuration - 1, 1)) * chartWidth;
-        const y = padding.top + chartHeight - (tps / maxTps) * chartHeight;
-        return `<circle cx="${x}" cy="${y}" r="4" fill="${PALETTE.bg}" stroke="${color}" stroke-width="2" class="dot-${idx}" opacity="0"><title>${messages.htmlAverageTps || "Avg TPS"} ${i}s: ${tps.toFixed(1)}</title>
+      ${result.tps
+        .map((tps, i) => {
+          const x = padding.left + (i / Math.max(maxDuration - 1, 1)) * chartWidth;
+          const y = padding.top + chartHeight - (tps / maxTps) * chartHeight;
+          return `<circle cx="${x}" cy="${y}" r="4" fill="${PALETTE.bg}" stroke="${color}" stroke-width="2" class="dot-${idx}" opacity="0"><title>${messages.htmlAverageTps || "Avg TPS"} ${i}s: ${tps.toFixed(1)}</title>
           <animate attributeName="opacity" from="0" to="1" begin="${0.5 + i * 0.05}s" dur="0.3s" fill="freeze"/>
         </circle>`;
-      }).join("")}
+        })
+        .join("")}
     `;
-  }).join("\n      ");
+    })
+    .join("\n      ");
 
   // Generate average line
   let avgPoints = "";
@@ -203,22 +204,21 @@ function generateSpeedChart(
         <span class="legend-line avg"></span>
         <span>${messages.htmlSummarySection}</span>
       </div>
-      ${results.map((_, idx) => {
-        const color = CHART_COLORS[idx % CHART_COLORS.length];
-        return `
+      ${results
+        .map((_, idx) => {
+          const color = CHART_COLORS[idx % CHART_COLORS.length];
+          return `
         <div class="legend-item">
           <span class="legend-line" style="background: ${color};"></span>
           <span>${messages.htmlRun} ${idx + 1}</span>
         </div>`;
-      }).join("")}
+        })
+        .join("")}
     </div>
   `;
 }
 
-function generateTPSHistogram(
-  stats: StatsResult,
-  messages: Messages
-): string {
+function generateTPSHistogram(stats: StatsResult, messages: Messages): string {
   const allTps = stats.mean.tps;
   if (allTps.length === 0) {
     return `<div class="no-data">${messages.noTpsData || "No TPS data available"}</div>`;
@@ -231,15 +231,16 @@ function generateTPSHistogram(
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
-  const bars = allTps.map((tps, i) => {
-    const barWidth = chartWidth / allTps.length - 2;
-    const x = padding.left + (i / allTps.length) * chartWidth;
-    const barHeight = (tps / maxTps) * chartHeight;
-    const y = padding.top + chartHeight - barHeight;
-    const hue = 180 + (tps / maxTps) * 60; // cyan to blue range
-    const color = `hsl(${hue}, 100%, 60%)`;
+  const bars = allTps
+    .map((tps, i) => {
+      const barWidth = chartWidth / allTps.length - 2;
+      const x = padding.left + (i / allTps.length) * chartWidth;
+      const barHeight = (tps / maxTps) * chartHeight;
+      const y = padding.top + chartHeight - barHeight;
+      const hue = 180 + (tps / maxTps) * 60; // cyan to blue range
+      const color = `hsl(${hue}, 100%, 60%)`;
 
-    return `
+      return `
       <rect
         x="${x}"
         y="${y}"
@@ -274,7 +275,8 @@ function generateTPSHistogram(
         />
       </rect>
     `;
-  }).join("");
+    })
+    .join("");
 
   // Generate Y-axis labels
   const yLabels = [];
@@ -352,7 +354,9 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
   ];
 
   // Details table rows
-  const detailRows = singleResults.map((result, idx) => `
+  const detailRows = singleResults
+    .map(
+      (result, idx) => `
         <tr>
           <td><span class="run-badge">${idx + 1}</span></td>
           <td>${formatTime(result.ttft)}</td>
@@ -362,17 +366,57 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           <td>${formatNumber(result.peakSpeed)}</td>
           <td>${result.peakTps}</td>
         </tr>
-  `).join("");
+  `
+    )
+    .join("");
 
   // Stats table rows
   const statsRows = [
-    { metric: messages.statsLabels.ttft, mean: formatTime(stats.mean.ttft), min: formatTime(stats.min.ttft), max: formatTime(stats.max.ttft), stdDev: formatTime(stats.stdDev.ttft) },
-    { metric: messages.statsLabels.totalTime, mean: formatTime(stats.mean.totalTime), min: formatTime(stats.min.totalTime), max: formatTime(stats.max.totalTime), stdDev: formatTime(stats.stdDev.totalTime) },
-    { metric: messages.statsLabels.totalTokens, mean: formatNumber(stats.mean.totalTokens, 1), min: formatNumber(stats.min.totalTokens, 0), max: formatNumber(stats.max.totalTokens, 0), stdDev: formatNumber(stats.stdDev.totalTokens, 1) },
-    { metric: messages.statsLabels.averageSpeed, mean: formatNumber(stats.mean.averageSpeed), min: formatNumber(stats.min.averageSpeed), max: formatNumber(stats.max.averageSpeed), stdDev: formatNumber(stats.stdDev.averageSpeed) },
-    { metric: messages.statsLabels.peakSpeed, mean: formatNumber(stats.mean.peakSpeed), min: formatNumber(stats.min.peakSpeed), max: formatNumber(stats.max.peakSpeed), stdDev: formatNumber(stats.stdDev.peakSpeed) },
-    { metric: messages.statsLabels.peakTps, mean: formatNumber(stats.mean.peakTps), min: formatNumber(stats.min.peakTps), max: formatNumber(stats.max.peakTps), stdDev: formatNumber(stats.stdDev.peakTps) },
-  ].map(row => `
+    {
+      metric: messages.statsLabels.ttft,
+      mean: formatTime(stats.mean.ttft),
+      min: formatTime(stats.min.ttft),
+      max: formatTime(stats.max.ttft),
+      stdDev: formatTime(stats.stdDev.ttft),
+    },
+    {
+      metric: messages.statsLabels.totalTime,
+      mean: formatTime(stats.mean.totalTime),
+      min: formatTime(stats.min.totalTime),
+      max: formatTime(stats.max.totalTime),
+      stdDev: formatTime(stats.stdDev.totalTime),
+    },
+    {
+      metric: messages.statsLabels.totalTokens,
+      mean: formatNumber(stats.mean.totalTokens, 1),
+      min: formatNumber(stats.min.totalTokens, 0),
+      max: formatNumber(stats.max.totalTokens, 0),
+      stdDev: formatNumber(stats.stdDev.totalTokens, 1),
+    },
+    {
+      metric: messages.statsLabels.averageSpeed,
+      mean: formatNumber(stats.mean.averageSpeed),
+      min: formatNumber(stats.min.averageSpeed),
+      max: formatNumber(stats.max.averageSpeed),
+      stdDev: formatNumber(stats.stdDev.averageSpeed),
+    },
+    {
+      metric: messages.statsLabels.peakSpeed,
+      mean: formatNumber(stats.mean.peakSpeed),
+      min: formatNumber(stats.min.peakSpeed),
+      max: formatNumber(stats.max.peakSpeed),
+      stdDev: formatNumber(stats.stdDev.peakSpeed),
+    },
+    {
+      metric: messages.statsLabels.peakTps,
+      mean: formatNumber(stats.mean.peakTps),
+      min: formatNumber(stats.min.peakTps),
+      max: formatNumber(stats.max.peakTps),
+      stdDev: formatNumber(stats.stdDev.peakTps),
+    },
+  ]
+    .map(
+      (row) => `
         <tr>
           <td class="metric-name">${row.metric}</td>
           <td class="value-primary">${row.mean}</td>
@@ -380,7 +424,9 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           <td>${row.max}</td>
           <td>${row.stdDev}</td>
         </tr>
-  `).join("");
+  `
+    )
+    .join("");
 
   const speedChart = generateSpeedChart(singleResults, messages);
   const tpsChart = generateTPSHistogram(stats, messages);
@@ -939,13 +985,17 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
     <section class="section">
       <div class="section-title">// ${messages.htmlSummarySection}</div>
       <div class="summary-cards">
-        ${summaryCards.map(card => `
+        ${summaryCards
+          .map(
+            (card) => `
         <div class="card" style="--card-accent: ${card.accent}">
           <div class="card-label">${card.label}</div>
           <div class="card-value">${card.value}<span class="card-unit">${card.unit || ""}</span></div>
           <div class="card-detail">${card.detail}</div>
         </div>
-        `).join("")}
+        `
+          )
+          .join("")}
       </div>
     </section>
 
