@@ -24,7 +24,7 @@ A powerful command-line tool for testing token output speed of LLM APIs. Support
   - **Peak Speed**: Fastest speed over a 10-token window
   - **Peak TPS**: Highest tokens received within a single second
   - **TPS Curve**: Tokens received per second throughout the stream
-- **Statistical Analysis**: Mean, min, max, and standard deviation across multiple test runs
+- **Statistical Analysis**: Mean, P50/P95/P99, min, and max across multiple test runs
 - **ASCII Visualization**: Beautiful terminal-based charts and tables
 - **HTML Report**: Generate interactive HTML reports with SVG charts
 - **Custom Endpoints**: Test third-party APIs compatible with OpenAI/Anthropic protocols
@@ -185,16 +185,16 @@ Model output (streaming):
 Token Speed Test Report
 ======================================================================
 Summary (N=3)
-+-----------------+--------+-------+-------+---------+
-| Metric          | Mean   | Min   | Max   | Std Dev |
-+-----------------+--------+-------+-------+---------+
-| TTFT (ms)       | 503.67 | 487.00| 523.00| 14.57   |
-| Total Time (ms) | 3248.67| 3189.00|3312.00|51.92   |
-| Total Tokens    | 405.00 | 398.00| 412.00| 5.35   |
-| Avg Speed       | 124.69 | 122.28| 126.96| 1.88   |
-| Peak Speed      | 156.32 | 154.23| 158.41| 1.82   |
-| Peak TPS        | 168.33 | 166.00| 171.00| 2.05   |
-+-----------------+--------+-------+-------+---------+
++-----------------------------------------------------------------------------------+
+| Metric          |     Mean |      P50 |      P95 |      P99 |      Min |      Max |
++-----------------------------------------------------------------------------------+
+| TTFT (ms)       |   503.67 |   501.00 |   520.00 |   523.00 |   487.00 |   523.00 |
+| Total Time (ms) |  3248.67 |  3245.00 |  3312.00 |  3312.00 |  3189.00 |  3312.00 |
+| Total Tokens    |   405.00 |   405.00 |   412.00 |   412.00 |   398.00 |   412.00 |
+| Avg Speed       |   124.69 |   124.84 |   126.96 |   126.96 |   122.28 |   126.96 |
+| Peak Speed      |   156.32 |   156.32 |   158.41 |   158.41 |   154.23 |   158.41 |
+| Peak TPS        |   168.33 |   168.00 |   171.00 |   171.00 |   166.00 |   171.00 |
++-----------------------------------------------------------------------------------+
 Token Speed Trend (TPS)
 [chart omitted]
 TPS Distribution
