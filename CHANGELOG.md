@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/Cansiny0320/token-speed-tester/compare/v1.8.0...v1.9.0) (2026-01-09)
+
+### Features
+
+- Add dark/light theme toggle to HTML report ([#19](https://github.com/Cansiny0320/token-speed-tester/issues/19)) ([9348e61](https://github.com/Cansiny0320/token-speed-tester/commit/9348e6132ea97e6b8bee7ced99135d4d1181ccc8)), closes [#9](https://github.com/Cansiny0320/token-speed-tester/issues/9) [#16](https://github.com/Cansiny0320/token-speed-tester/issues/16)
+- Add JSON/CSV export output ([#20](https://github.com/Cansiny0320/token-speed-tester/issues/20)) ([65ed3ce](https://github.com/Cansiny0320/token-speed-tester/commit/65ed3ceda13bab45b7e945e8b5e5c04b8da39779)), closes [#9](https://github.com/Cansiny0320/token-speed-tester/issues/9) [#16](https://github.com/Cansiny0320/token-speed-tester/issues/16)
+
 # [1.8.0](https://github.com/Cansiny0320/token-speed-tester/compare/v1.7.0...v1.8.0) (2026-01-09)
 
 ### Features
