@@ -40,6 +40,8 @@ export interface StatsResult {
   stdDev: CalculatedMetrics;
   percentiles: {
     ttft: PercentileMetrics;
+    totalTime: PercentileMetrics;
+    totalTokens: PercentileMetrics;
     averageSpeed: PercentileMetrics;
     peakSpeed: PercentileMetrics;
     peakTps: PercentileMetrics;
@@ -258,6 +260,8 @@ export function calculateStats(allMetrics: CalculatedMetrics[]): StatsResult {
     },
     percentiles: {
       ttft: calculatePercentiles(ttfts),
+      totalTime: calculatePercentiles(totalTimes),
+      totalTokens: calculatePercentiles(totalTokens),
       averageSpeed: calculatePercentiles(averageSpeeds),
       peakSpeed: calculatePercentiles(peakSpeeds),
       peakTps: calculatePercentiles(peakTpsValues),

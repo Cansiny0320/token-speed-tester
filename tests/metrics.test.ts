@@ -274,6 +274,13 @@ describe("metrics", () => {
 
       // Standard deviation for TTFT
       expect(stats.stdDev.ttft).toBeGreaterThan(0);
+
+      expect(stats.percentiles.totalTime.p50).toBe(1500);
+      expect(stats.percentiles.totalTime.p95).toBeCloseTo(1950, 1);
+      expect(stats.percentiles.totalTime.p99).toBeCloseTo(1990, 1);
+      expect(stats.percentiles.totalTokens.p50).toBe(75);
+      expect(stats.percentiles.totalTokens.p95).toBeCloseTo(97.5, 1);
+      expect(stats.percentiles.totalTokens.p99).toBeCloseTo(99.5, 1);
     });
 
     it("should handle single metric", () => {
