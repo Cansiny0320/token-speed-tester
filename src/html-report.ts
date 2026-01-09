@@ -1,20 +1,9 @@
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Config } from "./config.js";
 import type { CalculatedMetrics, StatsResult } from "./metrics.js";
 import type { Lang, Messages } from "./i18n.js";
-
-// Color palette for the technical dashboard theme
-const PALETTE = {
-  bg: "#0a0a0f",
-  bgSecondary: "#12121a",
-  bgCard: "#1a1a24",
-  border: "#2a2a3a",
-  text: "#e4e4eb",
-  textMuted: "#6a6a7a",
-  accent: "#00f5ff",
-  accentSecondary: "#ff00aa",
-  accentTertiary: "#ffcc00",
-  grid: "#1a1a24",
-};
 
 const CHART_COLORS = [
   "#00f5ff", // cyan
@@ -25,12 +14,42 @@ const CHART_COLORS = [
   "#aa00ff", // purple
 ];
 
+const PALETTE = {
+  bg: "#0a0a0f",
+  bgSecondary: "#12121a",
+  bgCard: "#1a1a24",
+  border: "#2a2a3a",
+  text: "#e4e4eb",
+  textMuted: "#6a6a7a",
+  accent: "#00f5ff",
+  accentSecondary: "#ff00aa",
+  accentTertiary: "#ffcc00",
+};
+
 interface HTMLReportOptions {
   config: Config;
   singleResults: CalculatedMetrics[];
   stats: StatsResult;
   lang: Lang;
   messages: Messages;
+}
+
+interface TemplateData {
+  lang: Lang;
+  title: string;
+  reportTitle: string;
+  testTimeLabel: string;
+  testTime: string;
+  configSection: string;
+  summarySection: string;
+  chartsSection: string;
+  statsTitle: string;
+  detailsSection: string;
+  configGrid: string;
+  summaryCards: string;
+  charts: string;
+  statsTable: string;
+  detailsTable: string;
 }
 
 function formatNumber(num: number, decimals: number = 2): string {
@@ -55,6 +74,20 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }
 
+function loadTemplate(): string {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  return readFileSync(resolve(__dirname, "template.html"), "utf-8");
+}
+
+function replaceTemplate(template: string, data: TemplateData): string {
+  let result = template;
+  for (const [key, value] of Object.entries(data)) {
+    result = result.replaceAll(new RegExp(`{{${key}}}`, "g"), value);
+  }
+  return result;
+}
+
 function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): string {
   const allTps = results.flatMap((r) => r.tps);
   if (allTps.length === 0) {
@@ -69,14 +102,12 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
-  // Generate average TPS line
   const avgTps: number[] = [];
   for (let i = 0; i < maxDuration; i++) {
     const values = results.map((r) => r.tps[i] ?? 0);
     avgTps.push(values.reduce((a, b) => a + b, 0) / values.length);
   }
 
-  // Generate polylines and gradients for each run
   const polylines = results
     .map((result, idx) => {
       const color = CHART_COLORS[idx % CHART_COLORS.length];
@@ -134,7 +165,6 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
     })
     .join("\n      ");
 
-  // Generate average line
   let avgPoints = "";
   avgTps.forEach((tps, i) => {
     const x = padding.left + (i / Math.max(maxDuration - 1, 1)) * chartWidth;
@@ -142,7 +172,6 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
     avgPoints += `${x},${y} `;
   });
 
-  // Generate Y-axis labels
   const yLabels = [];
   for (let i = 0; i <= 5; i++) {
     const value = Math.round((maxTps * i) / 5);
@@ -158,7 +187,6 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
     }
   }
 
-  // Generate X-axis labels
   const xLabels = [];
   const xSteps = Math.min(maxDuration, 10);
   for (let i = 0; i < xSteps; i++) {
@@ -177,16 +205,12 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
         #speedChart circle { transition: all 0.2s ease; cursor: pointer; }
         #speedChart circle:hover { r: 6; stroke-width: 3; }
       </style>
-      <!-- Grid background -->
       <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="${PALETTE.bgCard}" rx="4"/>
       ${yLabels.join("\n      ")}
       ${xLabels.join("\n      ")}
-      <!-- Axes -->
       <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" stroke="${PALETTE.border}" stroke-width="2"/>
       <line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" stroke="${PALETTE.border}" stroke-width="2"/>
-      <!-- Data lines -->
       ${polylines}
-      <!-- Average line -->
       <polyline
         fill="none"
         stroke="${PALETTE.text}"
@@ -195,7 +219,6 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
         opacity="0.7"
         points="${avgPoints.trim()}"
       />
-      <!-- Axis labels -->
       <text x="${padding.left + chartWidth / 2}" y="${height - 8}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">TIME (${messages.htmlSpeedChartHover})</text>
       <text x="12" y="${padding.top + chartHeight / 2}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}" transform="rotate(-90, 12, ${padding.top + chartHeight / 2})">TPS</text>
     </svg>
@@ -237,7 +260,7 @@ function generateTPSHistogram(stats: StatsResult, messages: Messages): string {
       const x = padding.left + (i / allTps.length) * chartWidth;
       const barHeight = (tps / maxTps) * chartHeight;
       const y = padding.top + chartHeight - barHeight;
-      const hue = 180 + (tps / maxTps) * 60; // cyan to blue range
+      const hue = 180 + (tps / maxTps) * 60;
       const color = `hsl(${hue}, 100%, 60%)`;
 
       return `
@@ -278,7 +301,6 @@ function generateTPSHistogram(stats: StatsResult, messages: Messages): string {
     })
     .join("");
 
-  // Generate Y-axis labels
   const yLabels = [];
   for (let i = 0; i <= 5; i++) {
     const value = Math.round((maxTps * i) / 5);
@@ -288,7 +310,6 @@ function generateTPSHistogram(stats: StatsResult, messages: Messages): string {
     );
   }
 
-  // Generate X-axis labels
   const xLabels = [];
   const xSteps = Math.min(allTps.length, 8);
   for (let i = 0; i < xSteps; i++) {
@@ -305,11 +326,9 @@ function generateTPSHistogram(stats: StatsResult, messages: Messages): string {
         #tpsChart .bar { transition: all 0.2s ease; cursor: pointer; opacity: 0.9; }
         #tpsChart .bar:hover { opacity: 1; filter: brightness(1.2); }
       </style>
-      <!-- Grid background -->
       <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="${PALETTE.bgCard}" rx="4"/>
       ${yLabels.join("\n      ")}
       ${xLabels.join("\n      ")}
-      <!-- Axes -->
       <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" stroke="${PALETTE.border}" stroke-width="2"/>
       <line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" stroke="${PALETTE.border}" stroke-width="2"/>
       ${bars}
@@ -323,7 +342,6 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
   const isZh = lang === "zh";
   const testTime = new Date().toLocaleString(isZh ? "zh-CN" : "en-US");
 
-  // Summary cards with accent colors
   const summaryCards = [
     {
       label: messages.statsLabels.ttft,
@@ -353,7 +371,6 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
     },
   ];
 
-  // Details table rows
   const detailRows = singleResults
     .map(
       (result, idx) => `
@@ -366,11 +383,10 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           <td>${formatNumber(result.peakSpeed)}</td>
           <td>${result.peakTps}</td>
         </tr>
-  `
+      `
     )
     .join("");
 
-  // Stats table rows
   const statsRows = [
     {
       metric: messages.statsLabels.ttft,
@@ -424,540 +440,14 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           <td>${row.max}</td>
           <td>${row.stdDev}</td>
         </tr>
-  `
+      `
     )
     .join("");
 
   const speedChart = generateSpeedChart(singleResults, messages);
   const tpsChart = generateTPSHistogram(stats, messages);
 
-  return `<!DOCTYPE html>
-<html lang="${lang}">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${messages.htmlTitle}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: ${PALETTE.bg};
-      --bg-secondary: ${PALETTE.bgSecondary};
-      --bg-card: ${PALETTE.bgCard};
-      --border: ${PALETTE.border};
-      --text: ${PALETTE.text};
-      --text-muted: ${PALETTE.textMuted};
-      --accent: ${PALETTE.accent};
-      --accent-secondary: ${PALETTE.accentSecondary};
-      --accent-tertiary: ${PALETTE.accentTertiary};
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      padding: 0;
-      min-height: 100vh;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    /* Scanline overlay */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0, 245, 255, 0.015) 2px,
-        rgba(0, 245, 255, 0.015) 4px
-      );
-      pointer-events: none;
-      z-index: 1000;
-    }
-
-    /* Grid background */
-    body::after {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 40px 40px;
-      opacity: 0.3;
-      pointer-events: none;
-      z-index: -1;
-    }
-
-    .container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 32px 24px;
-    }
-
-    /* Header */
-    header {
-      position: relative;
-      margin-bottom: 40px;
-      padding: 48px 32px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
-    }
-
-    header::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-secondary), var(--accent-tertiary));
-    }
-
-    header .badge {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      padding: 4px 12px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-
-    header h1 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 4px;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    header .subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    /* Decorative corner brackets */
-    .corner-bracket {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      border-color: var(--accent);
-      border-style: solid;
-      pointer-events: none;
-    }
-    .corner-bracket.tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
-    .corner-bracket.tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
-    .corner-bracket.bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
-    .corner-bracket.br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
-
-    /* Section */
-    .section {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 24px;
-      margin-bottom: 20px;
-      position: relative;
-    }
-
-    .section::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: linear-gradient(180deg, var(--accent), var(--accent-secondary));
-    }
-
-    .section-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 20px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .section-title::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* Config grid */
-    .config-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .config-item {
-      padding: 12px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      position: relative;
-    }
-
-    .config-item.wide {
-      grid-column: 1 / -1;
-    }
-
-    .config-item::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 8px;
-      height: 8px;
-      background: var(--accent);
-      clip-path: polygon(0 0, 100% 0, 0 100%);
-    }
-
-    .config-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .config-value {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      word-break: break-all;
-    }
-
-    /* Summary cards */
-    .summary-cards {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .card {
-      padding: 20px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--card-accent, var(--accent));
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(0, 245, 255, 0.1);
-      border-color: var(--card-accent, var(--accent));
-    }
-
-    .card-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    .card-value {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 4px;
-      color: var(--card-accent, var(--accent));
-    }
-
-    .card-unit {
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--text-muted);
-      margin-left: 4px;
-    }
-
-    .card-detail {
-      font-size: 10px;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-    }
-
-    /* Charts */
-    .charts-container {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20px;
-    }
-
-    .chart-wrapper {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      padding: 20px;
-      position: relative;
-    }
-
-    .chart-wrapper::before {
-      content: "";
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-    }
-
-    .chart-title {
-      font-size: 11px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .chart {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .chart-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 16px;
-      font-size: 11px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-    }
-
-    .legend-line {
-      width: 16px;
-      height: 2px;
-      border-radius: 1px;
-    }
-
-    .legend-line.avg {
-      background: repeating-linear-gradient(90deg, var(--text) 0px, var(--text) 4px, transparent 4px, transparent 8px);
-      height: 3px;
-    }
-
-    .no-data {
-      text-align: center;
-      padding: 40px;
-      color: var(--text-muted);
-      font-size: 12px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    /* Table */
-    .table-wrapper {
-      overflow-x: auto;
-      max-height: 400px;
-      overflow-y: auto;
-      border: 1px solid var(--border);
-    }
-
-    .table-wrapper::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-
-    .table-wrapper::-webkit-scrollbar-track {
-      background: var(--bg-secondary);
-    }
-
-    .table-wrapper::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-    }
-
-    .table-wrapper::-webkit-scrollbar-thumb:hover {
-      background: var(--accent);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-
-    th, td {
-      padding: 12px 16px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    th {
-      background: var(--bg-secondary);
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      font-size: 10px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    tr:hover {
-      background: rgba(0, 245, 255, 0.05);
-    }
-
-    .run-badge {
-      display: inline-block;
-      width: 24px;
-      height: 24px;
-      line-height: 24px;
-      text-align: center;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      font-weight: 600;
-    }
-
-    .metric-name {
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .value-primary {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    /* Footer */
-    footer {
-      text-align: center;
-      margin-top: 40px;
-      padding: 24px;
-      color: var(--text-muted);
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      border-top: 1px solid var(--border);
-    }
-
-    footer strong {
-      color: var(--accent);
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .section, header {
-      animation: fadeInUp 0.6s ease backwards;
-    }
-
-    .section:nth-child(1) { animation-delay: 0.1s; }
-    .section:nth-child(2) { animation-delay: 0.2s; }
-    .section:nth-child(3) { animation-delay: 0.3s; }
-    .section:nth-child(4) { animation-delay: 0.4s; }
-    .section:nth-child(5) { animation-delay: 0.5s; }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .summary-cards,
-      .config-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .charts-container {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .container {
-        padding: 16px;
-      }
-      header {
-        padding: 24px 16px;
-      }
-      header h1 {
-        font-size: 20px;
-        letter-spacing: 2px;
-      }
-      .summary-cards,
-      .config-grid {
-        grid-template-columns: 1fr;
-      }
-      .card-value {
-        font-size: 24px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <span class="badge">Performance Report</span>
-      <div class="corner-bracket tl"></div>
-      <div class="corner-bracket tr"></div>
-      <div class="corner-bracket bl"></div>
-      <div class="corner-bracket br"></div>
-      <h1>${messages.htmlReportTitle}</h1>
-      <div class="subtitle">${messages.htmlTestTime}: ${testTime}</div>
-    </header>
-
-    <section class="section">
-      <div class="section-title">// ${messages.htmlConfigSection}</div>
+  const configGridHtml = `
       <div class="config-grid">
         <div class="config-item">
           <span class="config-label">${messages.configLabels.provider}</span>
@@ -980,27 +470,21 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           <span class="config-value">"${escapeHtml(config.prompt)}"</span>
         </div>
       </div>
-    </section>
+    `;
 
-    <section class="section">
-      <div class="section-title">// ${messages.htmlSummarySection}</div>
-      <div class="summary-cards">
-        ${summaryCards
-          .map(
-            (card) => `
+  const summaryCardsHtml = summaryCards
+    .map(
+      (card) => `
         <div class="card" style="--card-accent: ${card.accent}">
           <div class="card-label">${card.label}</div>
           <div class="card-value">${card.value}<span class="card-unit">${card.unit || ""}</span></div>
           <div class="card-detail">${card.detail}</div>
         </div>
-        `
-          )
-          .join("")}
-      </div>
-    </section>
+      `
+    )
+    .join("");
 
-    <section class="section">
-      <div class="section-title">// ${messages.htmlChartsSection}</div>
+  const chartsHtml = `
       <div class="charts-container">
         <div class="chart-wrapper">
           <div class="chart-title">${messages.speedChartTitle}</div>
@@ -1011,10 +495,9 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           ${tpsChart}
         </div>
       </div>
-    </section>
+    `;
 
-    <section class="section">
-      <div class="section-title">// ${messages.statsSummaryTitle(stats.sampleSize)}</div>
+  const statsTableHtml = `
       <div class="table-wrapper">
         <table>
           <thead>
@@ -1031,10 +514,9 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           </tbody>
         </table>
       </div>
-    </section>
+    `;
 
-    <section class="section">
-      <div class="section-title">// ${messages.htmlDetailsSection}</div>
+  const detailsTableHtml = `
       <div class="table-wrapper">
         <table>
           <thead>
@@ -1053,12 +535,26 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           </tbody>
         </table>
       </div>
-    </section>
+    `;
 
-    <footer>
-      Generated by <strong>token-speed-test</strong> // LLM API Streaming Performance Tool
-    </footer>
-  </div>
-</body>
-</html>`;
+  const data: TemplateData = {
+    lang,
+    title: messages.htmlTitle,
+    reportTitle: messages.htmlReportTitle,
+    testTimeLabel: messages.htmlTestTime,
+    testTime,
+    configSection: messages.htmlConfigSection,
+    summarySection: messages.htmlSummarySection,
+    chartsSection: messages.htmlChartsSection,
+    statsTitle: messages.statsSummaryTitle(stats.sampleSize),
+    detailsSection: messages.htmlDetailsSection,
+    configGrid: configGridHtml,
+    summaryCards: summaryCardsHtml,
+    charts: chartsHtml,
+    statsTable: statsTableHtml,
+    detailsTable: detailsTableHtml,
+  };
+
+  const template = loadTemplate();
+  return replaceTemplate(template, data);
 }
