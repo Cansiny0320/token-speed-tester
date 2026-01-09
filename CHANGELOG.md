@@ -1,3 +1,9 @@
+# [1.10.0](https://github.com/Cansiny0320/token-speed-tester/compare/v1.9.0...v1.10.0) (2026-01-09)
+
+### Features
+
+- default output format to html ([fc56cd1](https://github.com/Cansiny0320/token-speed-tester/commit/fc56cd14f724110f2366037dd108c1895b32490b))
+
 # [1.9.0](https://github.com/Cansiny0320/token-speed-tester/compare/v1.8.0...v1.9.0) (2026-01-09)
 
 ### Features
