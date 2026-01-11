@@ -64,8 +64,8 @@ The codebase follows a modular architecture with clear separation of concerns:
 ```typescript
 // Raw timing data from a single API call
 interface StreamMetrics {
-  ttft: number;           // First token latency (ms)
-  tokens: number[];       // Each token's arrival timestamp
+  ttft: number; // First token latency (ms)
+  tokens: number[]; // Each token's arrival timestamp
   totalTokens: number;
   totalTime: number;
 }
@@ -75,10 +75,10 @@ interface CalculatedMetrics {
   ttft: number;
   totalTime: number;
   totalTokens: number;
-  averageSpeed: number;   // tokens/s
-  peakSpeed: number;      // max 10-token window speed
-  peakTps: number;        // max tokens in any single second
-  tps: number[];          // tokens per second curve
+  averageSpeed: number; // tokens/s
+  peakSpeed: number; // max 10-token window speed
+  peakTps: number; // max tokens in any single second
+  tps: number[]; // tokens per second curve
 }
 ```
 
@@ -94,6 +94,7 @@ interface CalculatedMetrics {
 ## Release Process
 
 Uses `semantic-release` with conventional commits. Format:
+
 - `feat:` - minor version bump
 - `fix:` - patch version bump
 - `BREAKING CHANGE:` - major version bump

@@ -1,5 +1,7 @@
-import { describe, it, expect, afterEach } from "vitest";
-import { writeFile, unlink } from "node:fs/promises";
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { generateHTMLReport } from "../src/html-report.js";
 import type { Config } from "../src/config.js";
 import type { StatsResult, CalculatedMetrics } from "../src/metrics.js";
@@ -108,7 +110,7 @@ describe("html-report", () => {
         messages,
       });
 
-      expect(result).toContain("<!DOCTYPE html>");
+      expect(result).toMatch(/<!doctype html>/i);
       expect(result).toContain('lang="zh"');
       expect(result).toContain("Token 速度测试报告");
       expect(result).toContain("统计汇总");
@@ -127,7 +129,7 @@ describe("html-report", () => {
         messages,
       });
 
-      expect(result).toContain("<!DOCTYPE html>");
+      expect(result).toMatch(/<!doctype html>/i);
       expect(result).toContain('lang="en"');
       expect(result).toContain("Token Speed Test Report");
       expect(result).toContain("Summary");
@@ -428,7 +430,7 @@ describe("html-report", () => {
         messages,
       });
 
-      expect(result).toContain("<!DOCTYPE html>");
+      expect(result).toMatch(/<!doctype html>/i);
       expect(result).toContain("100ms");
       expect(result).toContain("50"); // Average speed
     });
@@ -473,7 +475,7 @@ describe("html-report", () => {
       expect(result).toContain("--grid-line-opacity");
 
       // Should include theme toggle script
-      expect(result).toContain("localStorage.getItem('theme')");
+      expect(result).toMatch(/localStorage\.getItem\((['"])theme\1\)/);
       expect(result).toContain("prefers-color-scheme");
     });
   });
@@ -531,14 +533,16 @@ describe("html-report", () => {
   });
 
   describe("HTML output integration", () => {
-    const testFilePath = "/tmp/test-report.html";
+    let tempDir: string;
+    let testFilePath: string;
+
+    beforeEach(async () => {
+      tempDir = await mkdtemp(join(tmpdir(), "token-speed-tester-"));
+      testFilePath = join(tempDir, "test-report.html");
+    });
 
     afterEach(async () => {
-      try {
-        await unlink(testFilePath);
-      } catch {
-        // Ignore if file doesn't exist
-      }
+      await rm(tempDir, { recursive: true, force: true });
     });
 
     it("should write valid HTML to file", async () => {
@@ -556,7 +560,7 @@ describe("html-report", () => {
       // Verify file was written
       const fs = await import("node:fs");
       const content = fs.readFileSync(testFilePath, "utf-8");
-      expect(content).toContain("<!DOCTYPE html>");
+      expect(content).toMatch(/<!doctype html>/i);
       expect(content).toContain("</html>");
     });
   });
