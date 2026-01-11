@@ -153,7 +153,7 @@ function mean(values: number[]): number {
 function standardDeviation(values: number[]): number {
   if (values.length < 2) return 0;
   const avg = mean(values);
-  const squareDiffs = values.map((v) => Math.pow(v - avg, 2));
+  const squareDiffs = values.map(v => (v - avg) ** 2);
   return Math.sqrt(mean(squareDiffs));
 }
 
@@ -206,18 +206,18 @@ export function calculateStats(allMetrics: CalculatedMetrics[]): StatsResult {
   const sampleSize = allMetrics.length;
 
   // 提取各项指标的数组
-  const ttfts = allMetrics.map((m) => m.ttft);
-  const totalTimes = allMetrics.map((m) => m.totalTime);
-  const totalTokens = allMetrics.map((m) => m.totalTokens);
-  const averageSpeeds = allMetrics.map((m) => m.averageSpeed);
-  const peakSpeeds = allMetrics.map((m) => m.peakSpeed);
-  const peakTpsValues = allMetrics.map((m) => m.peakTps);
+  const ttfts = allMetrics.map(m => m.ttft);
+  const totalTimes = allMetrics.map(m => m.totalTime);
+  const totalTokens = allMetrics.map(m => m.totalTokens);
+  const averageSpeeds = allMetrics.map(m => m.averageSpeed);
+  const peakSpeeds = allMetrics.map(m => m.peakSpeed);
+  const peakTpsValues = allMetrics.map(m => m.peakTps);
 
   // 找到最长的 TPS 数组
-  const maxTpsLength = Math.max(...allMetrics.map((m) => m.tps.length));
+  const maxTpsLength = Math.max(...allMetrics.map(m => m.tps.length));
   const avgTps: number[] = [];
   for (let i = 0; i < maxTpsLength; i++) {
-    const values = allMetrics.map((m) => m.tps[i] ?? 0);
+    const values = allMetrics.map(m => m.tps[i] ?? 0);
     avgTps.push(mean(values));
   }
 

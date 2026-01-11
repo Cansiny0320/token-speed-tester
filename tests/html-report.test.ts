@@ -1,10 +1,10 @@
-import { describe, it, expect, afterEach, beforeEach } from "vitest";
+import type { Config } from "../src/config.js";
+import type { CalculatedMetrics, StatsResult } from "../src/metrics.js";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { generateHTMLReport } from "../src/html-report.js";
-import type { Config } from "../src/config.js";
-import type { StatsResult, CalculatedMetrics } from "../src/metrics.js";
 import { getMessages } from "../src/i18n.js";
 
 describe("html-report", () => {
@@ -111,7 +111,7 @@ describe("html-report", () => {
       });
 
       expect(result).toMatch(/<!doctype html>/i);
-      expect(result).toContain('lang="zh"');
+      expect(result).toContain("lang=\"zh\"");
       expect(result).toContain("Token 速度测试报告");
       expect(result).toContain("统计汇总");
       expect(result).toContain("配置");
@@ -130,7 +130,7 @@ describe("html-report", () => {
       });
 
       expect(result).toMatch(/<!doctype html>/i);
-      expect(result).toContain('lang="en"');
+      expect(result).toContain("lang=\"en\"");
       expect(result).toContain("Token Speed Test Report");
       expect(result).toContain("Summary");
       expect(result).toContain("Configuration");
@@ -148,7 +148,7 @@ describe("html-report", () => {
       });
 
       expect(result).toContain("<svg");
-      expect(result).toContain('id="speedChart"');
+      expect(result).toContain("id=\"speedChart\"");
       expect(result).toContain("<polyline");
       expect(result).toContain("<circle");
     });
@@ -164,7 +164,7 @@ describe("html-report", () => {
       });
 
       expect(result).toContain("<svg");
-      expect(result).toContain('id="tpsChart"');
+      expect(result).toContain("id=\"tpsChart\"");
       expect(result).toContain("<rect");
     });
 
@@ -231,9 +231,9 @@ describe("html-report", () => {
         messages,
       });
 
-      expect(result).toContain('<span class="run-badge">1</span>');
-      expect(result).toContain('<span class="run-badge">2</span>');
-      expect(result).toContain('<span class="run-badge">3</span>');
+      expect(result).toContain("<span class=\"run-badge\">1</span>");
+      expect(result).toContain("<span class=\"run-badge\">2</span>");
+      expect(result).toContain("<span class=\"run-badge\">3</span>");
       expect(result).toContain("121ms"); // First TTFT (rounded)
       expect(result).toContain("125"); // First total tokens
     });
@@ -287,7 +287,7 @@ describe("html-report", () => {
       const messages = getMessages("zh");
       const dangerousConfig: Config = {
         ...mockConfig,
-        prompt: '<script>alert("xss")</script>',
+        prompt: "<script>alert(\"xss\")</script>",
       };
 
       const result = generateHTMLReport({
@@ -298,7 +298,7 @@ describe("html-report", () => {
         messages,
       });
 
-      expect(result).not.toContain('<script>alert("xss")</script>');
+      expect(result).not.toContain("<script>alert(\"xss\")</script>");
       expect(result).toContain("&lt;script&gt;");
     });
 
@@ -462,15 +462,15 @@ describe("html-report", () => {
 
       // Should include theme toggle button
       expect(result).toContain("theme-toggle");
-      expect(result).toContain('id="themeToggle"');
-      expect(result).toContain('aria-label="Toggle theme"');
+      expect(result).toContain("id=\"themeToggle\"");
+      expect(result).toContain("aria-label=\"Toggle theme\"");
 
       // Should include sun and moon icons
       expect(result).toContain("moon-icon");
       expect(result).toContain("sun-icon");
 
       // Should include light theme CSS variables
-      expect(result).toContain('[data-theme="light"]');
+      expect(result).toContain("[data-theme=\"light\"]");
       expect(result).toContain("--scan-line-opacity");
       expect(result).toContain("--grid-line-opacity");
 
@@ -489,7 +489,7 @@ describe("html-report", () => {
     it("should call htmlOpenError message function", () => {
       const messages = getMessages("zh");
       expect(messages.htmlOpenError("report.html")).toBe(
-        "无法自动打开报告，请手动打开: report.html"
+        "无法自动打开报告，请手动打开: report.html",
       );
     });
 
@@ -501,7 +501,7 @@ describe("html-report", () => {
     it("should support English htmlOpenError message", () => {
       const messages = getMessages("en");
       expect(messages.htmlOpenError("report.html")).toBe(
-        "Could not auto-open report, please open manually: report.html"
+        "Could not auto-open report, please open manually: report.html",
       );
     });
 

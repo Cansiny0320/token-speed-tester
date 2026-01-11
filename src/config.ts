@@ -1,4 +1,5 @@
-import { getMessages, resolveLang, type Lang } from "./i18n.js";
+import type { Lang } from "./i18n.js";
+import { getMessages, resolveLang } from "./i18n.js";
 
 export type Provider = "anthropic" | "openai";
 export type OutputFormat = "terminal" | "json" | "csv" | "html";
@@ -78,7 +79,7 @@ export function parseConfig(args: ParsedArgs): Config {
   // 验证输出格式
   if (outputFormat && !["terminal", "json", "csv", "html"].includes(outputFormat)) {
     throw new Error(
-      `Invalid output-format: ${outputFormat}. Must be 'terminal', 'json', 'csv', or 'html'.`
+      `Invalid output-format: ${outputFormat}. Must be 'terminal', 'json', 'csv', or 'html'.`,
     );
   }
 
@@ -89,11 +90,14 @@ export function parseConfig(args: ParsedArgs): Config {
   let finalOutputPath = "report";
   if (outputPath) {
     finalOutputPath = outputPath;
-  } else if (outputFormat === "html") {
+  }
+  else if (outputFormat === "html") {
     finalOutputPath = "report.html";
-  } else if (outputFormat === "json") {
+  }
+  else if (outputFormat === "json") {
     finalOutputPath = "report.json";
-  } else if (outputFormat === "csv") {
+  }
+  else if (outputFormat === "csv") {
     finalOutputPath = "report.csv";
   }
 
@@ -131,17 +135,17 @@ export function validateConfig(config: Config): { valid: boolean; error?: string
   }
 
   if (
-    !Number.isFinite(config.maxTokens) ||
-    !Number.isInteger(config.maxTokens) ||
-    config.maxTokens <= 0
+    !Number.isFinite(config.maxTokens)
+    || !Number.isInteger(config.maxTokens)
+    || config.maxTokens <= 0
   ) {
     return { valid: false, error: "maxTokens must be a positive integer" };
   }
 
   if (
-    !Number.isFinite(config.runCount) ||
-    !Number.isInteger(config.runCount) ||
-    config.runCount <= 0
+    !Number.isFinite(config.runCount)
+    || !Number.isInteger(config.runCount)
+    || config.runCount <= 0
   ) {
     return { valid: false, error: "runCount must be a positive integer" };
   }

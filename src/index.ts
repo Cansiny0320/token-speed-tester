@@ -1,19 +1,19 @@
 #!/usr/bin/env node
+import type { OutputFormat, Provider } from "./config.js";
 import { readFileSync } from "node:fs";
 import { writeFile as fsWriteFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Command } from "commander";
 import chalk from "chalk";
+import { Command } from "commander";
 import open from "open";
-import type { Provider } from "./config.js";
-import { parseConfig, type OutputFormat } from "./config.js";
-import { runMultipleTests } from "./client.js";
-import { calculateMetrics, calculateStats } from "./metrics.js";
 import { renderReport, renderSingleResult } from "./chart.js";
-import { generateHTMLReport } from "./html-report.js";
+import { runMultipleTests } from "./client.js";
+import { parseConfig } from "./config.js";
 import { generateCSVExport, generateJSONExport } from "./export.js";
+import { generateHTMLReport } from "./html-report.js";
 import { DEFAULT_LANG, getMessages } from "./i18n.js";
+import { calculateMetrics, calculateStats } from "./metrics.js";
 
 function getCliVersion(): string {
   try {
@@ -21,7 +21,8 @@ function getCliVersion(): string {
     const packagePath = join(currentDir, "..", "package.json");
     const packageJson = JSON.parse(readFileSync(packagePath, "utf-8")) as { version?: string };
     return packageJson.version ?? "unknown";
-  } catch {
+  }
+  catch {
     return "unknown";
   }
 }
@@ -57,8 +58,8 @@ async function main() {
       provider: options.provider as Provider,
       url: options.url,
       model: options.model,
-      maxTokens: parseInt(options.maxTokens, 10),
-      runs: parseInt(options.runs, 10),
+      maxTokens: Number.parseInt(options.maxTokens, 10),
+      runs: Number.parseInt(options.runs, 10),
       prompt: options.prompt,
       lang: options.lang,
       outputFormat: options.outputFormat as OutputFormat,
@@ -77,8 +78,8 @@ async function main() {
       chalk.gray(
         `${messages.configLabels.prompt}: ${chalk.white(config.prompt.substring(0, 50))}${
           config.prompt.length > 50 ? "..." : ""
-        }`
-      )
+        }`,
+      ),
     );
     console.log(chalk.gray("─".repeat(50)));
 
@@ -89,7 +90,7 @@ async function main() {
     const results = await runMultipleTests(config);
 
     // 计算指标
-    const allMetrics = results.map((r) => calculateMetrics(r));
+    const allMetrics = results.map(r => calculateMetrics(r));
 
     // 计算统计
     const stats = calculateStats(allMetrics);
@@ -103,15 +104,18 @@ async function main() {
 
       // 显示报告
       console.log(chalk.cyan("\n" + renderReport(stats, config.lang)));
-    } else if (config.outputFormat === "json") {
+    }
+    else if (config.outputFormat === "json") {
       const jsonContent = generateJSONExport(config, allMetrics, stats);
       await fsWriteFile(config.outputPath, jsonContent, "utf-8");
       console.log(chalk.cyan(`\n✓ JSON report generated: ${config.outputPath}\n`));
-    } else if (config.outputFormat === "csv") {
+    }
+    else if (config.outputFormat === "csv") {
       const csvContent = generateCSVExport(config, allMetrics, stats);
       await fsWriteFile(config.outputPath, csvContent, "utf-8");
       console.log(chalk.cyan(`\n✓ CSV report generated: ${config.outputPath}\n`));
-    } else if (config.outputFormat === "html") {
+    }
+    else if (config.outputFormat === "html") {
       const htmlContent = generateHTMLReport({
         config,
         singleResults: allMetrics,
@@ -126,16 +130,18 @@ async function main() {
       // 自动打开浏览器
       await open(config.outputPath).catch(() => {
         console.warn(
-          chalk.yellow(`Could not auto-open report, please open manually: ${config.outputPath}`)
+          chalk.yellow(`Could not auto-open report, please open manually: ${config.outputPath}`),
         );
       });
     }
 
     console.log(chalk.green(`${messages.testComplete}\n`));
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) {
       console.error(chalk.red(`\n${messages.errorPrefix}: ${error.message}\n`));
-    } else {
+    }
+    else {
       console.error(chalk.red(`\n${messages.unknownError}\n`));
     }
     process.exit(1);

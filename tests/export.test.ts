@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { generateJSONExport, generateCSVExport } from "../src/export.js";
 import type { Config } from "../src/config.js";
 import type { CalculatedMetrics, StatsResult } from "../src/metrics.js";
+import { describe, expect, it } from "vitest";
+import { generateCSVExport, generateJSONExport } from "../src/export.js";
 
 describe("export", () => {
   const mockConfig: Config = {

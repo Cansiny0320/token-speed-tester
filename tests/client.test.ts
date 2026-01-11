@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
+import type { Config } from "../src/config.js";
+import { describe, expect, it, vi } from "vitest";
 import {
   anthropicStreamTest,
   openaiStreamTest,
-  streamTest,
   runMultipleTests,
+  streamTest,
 } from "../src/client.js";
-import type { Config } from "../src/config.js";
 
 vi.mock("../src/tokenizer.js", () => ({
   createTokenizer: vi.fn(() => ({
@@ -19,7 +19,7 @@ vi.mock("@anthropic-ai/sdk", () => ({
   default: vi.fn().mockImplementation(() => ({
     messages: {
       create: vi.fn().mockResolvedValue({
-        [Symbol.asyncIterator]: async function* () {
+        async* [Symbol.asyncIterator]() {
           yield { type: "content_block_start", index: 0 };
           yield {
             type: "content_block_delta",
@@ -45,7 +45,7 @@ vi.mock("openai", () => ({
     chat: {
       completions: {
         create: vi.fn().mockResolvedValue({
-          [Symbol.asyncIterator]: async function* () {
+          async* [Symbol.asyncIterator]() {
             yield { choices: [{ delta: { content: "Hi" } }] };
             yield { choices: [{ delta: { content: " there" } }] };
             yield { choices: [{}] };
@@ -87,12 +87,12 @@ describe("client", () => {
           ({
             messages: {
               create: vi.fn().mockResolvedValue({
-                [Symbol.asyncIterator]: async function* () {
+                async* [Symbol.asyncIterator]() {
                   yield { type: "message_stop" };
                 },
               }),
             },
-          }) as never
+          }) as never,
       );
 
       const result = await anthropicStreamTest(mockConfig);
@@ -109,11 +109,11 @@ describe("client", () => {
             messages: {
               create: vi.fn().mockRejectedValue(new Error("API Error")),
             },
-          }) as never
+          }) as never,
       );
 
       await expect(anthropicStreamTest(mockConfig)).rejects.toThrow(
-        "Anthropic API error: API Error"
+        "Anthropic API error: API Error",
       );
     });
   });
@@ -137,13 +137,13 @@ describe("client", () => {
             chat: {
               completions: {
                 create: vi.fn().mockResolvedValue({
-                  [Symbol.asyncIterator]: async function* () {
+                  async* [Symbol.asyncIterator]() {
                     yield { choices: [{}] };
                   },
                 }),
               },
             },
-          }) as never
+          }) as never,
       );
 
       const config: Config = { ...mockConfig, provider: "openai" };
@@ -162,7 +162,7 @@ describe("client", () => {
                 create: vi.fn().mockRejectedValue(new Error("API Error")),
               },
             },
-          }) as never
+          }) as never,
       );
 
       const config: Config = { ...mockConfig, provider: "openai" };

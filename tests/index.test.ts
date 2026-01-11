@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { parseConfig } from "../src/config.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runMultipleTests } from "../src/client.js";
+import { parseConfig } from "../src/config.js";
 import { calculateMetrics, calculateStats } from "../src/metrics.js";
 
 // Mock all dependencies to avoid actual execution
@@ -14,7 +14,7 @@ vi.mock("../src/client.js", () => ({
 }));
 
 vi.mock("../src/metrics.js", () => ({
-  calculateMetrics: vi.fn((m) => ({
+  calculateMetrics: vi.fn(m => ({
     ttft: m.ttft,
     totalTime: m.totalTime,
     totalTokens: m.totalTokens,
@@ -216,7 +216,7 @@ describe("index (CLI entry point)", () => {
       });
 
       const results = await runMultipleTests(config);
-      const allMetrics = results.map((r) => calculateMetrics(r));
+      const allMetrics = results.map(r => calculateMetrics(r));
       const stats = calculateStats(allMetrics);
 
       expect(mockRunMultipleTests).toHaveBeenCalledWith(config);
@@ -235,7 +235,7 @@ describe("index (CLI entry point)", () => {
       expect(() =>
         parseConfig({
           apiKey: "",
-        })
+        }),
       ).toThrow("API Key is required");
     });
 
@@ -248,7 +248,7 @@ describe("index (CLI entry point)", () => {
         parseConfig({
           apiKey: "sk-test",
           provider: "invalid" as never,
-        })
+        }),
       ).toThrow("Invalid provider");
     });
 
@@ -261,7 +261,7 @@ describe("index (CLI entry point)", () => {
         parseConfig({
           apiKey: "sk-test",
           runs: -1,
-        })
+        }),
       ).toThrow("Invalid runs");
     });
   });

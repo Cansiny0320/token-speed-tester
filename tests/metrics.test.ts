@@ -1,15 +1,15 @@
-import { describe, it, expect } from "vitest";
+import type { StreamMetrics } from "../src/metrics.js";
+import { describe, expect, it } from "vitest";
 import {
-  calculateTTFT,
   calculateAverageSpeed,
-  calculatePeakSpeed,
-  calculateTPS,
   calculateMetrics,
+  calculatePeakSpeed,
   calculateStats,
+  calculateTPS,
+  calculateTTFT,
   formatSpeed,
   formatTime,
 } from "../src/metrics.js";
-import type { StreamMetrics } from "../src/metrics.js";
 
 describe("metrics", () => {
   describe("calculateTTFT", () => {

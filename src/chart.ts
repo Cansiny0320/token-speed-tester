@@ -1,6 +1,7 @@
-import stringWidth from "string-width";
+import type { Lang } from "./i18n.js";
 import type { CalculatedMetrics, StatsResult } from "./metrics.js";
-import { DEFAULT_LANG, getMessages, type Lang } from "./i18n.js";
+import stringWidth from "string-width";
+import { DEFAULT_LANG, getMessages } from "./i18n.js";
 
 const BLOCK_CHAR = "█";
 const CHART_WIDTH = 50;
@@ -31,7 +32,7 @@ function padStartWidth(text: string, width: number): string {
 export function renderSpeedChart(
   tps: number[],
   maxSpeed?: number,
-  lang: Lang = DEFAULT_LANG
+  lang: Lang = DEFAULT_LANG,
 ): string {
   const messages = getMessages(lang);
   if (tps.length === 0) {
@@ -77,10 +78,10 @@ export function renderSpeedChart(
   const labelLine = new Array(CHART_WIDTH).fill(" ");
   const maxIndex = Math.max(tps.length - 1, 1);
   for (const label of xLabels) {
-    const seconds = parseInt(label.replace("s", ""), 10);
+    const seconds = Number.parseInt(label.replace("s", ""), 10);
     const position = Math.min(
       CHART_WIDTH - 1,
-      Math.round((seconds / maxIndex) * (CHART_WIDTH - 1))
+      Math.round((seconds / maxIndex) * (CHART_WIDTH - 1)),
     );
     for (let i = 0; i < label.length && position + i < CHART_WIDTH; i++) {
       labelLine[position + i] = label[i];
@@ -144,7 +145,7 @@ export function renderTPSHistogram(tps: number[], lang: Lang = DEFAULT_LANG): st
     const bucketEnd = ((i + 1) * bucketSize).toFixed(1);
     return `${bucketStart}-${bucketEnd}`;
   });
-  const labelWidth = Math.max(...labels.map((l) => stringWidth(l)));
+  const labelWidth = Math.max(...labels.map(l => stringWidth(l)));
 
   for (let i = 0; i < buckets; i++) {
     const label = padEndWidth(labels[i], labelWidth);
@@ -169,22 +170,22 @@ export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG):
   lines.push(messages.statsSummaryTitle(stats.sampleSize));
 
   // 表头
-  const headerRow =
-    "│ " +
-    padEndWidth(messages.statsHeaders.metric, STAT_LABEL_WIDTH) +
-    " │ " +
-    padStartWidth(messages.statsHeaders.mean, STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(messages.statsHeaders.p50, STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(messages.statsHeaders.p95, STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(messages.statsHeaders.p99, STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(messages.statsHeaders.min, STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(messages.statsHeaders.max, STAT_VALUE_WIDTH) +
-    " │";
+  const headerRow
+    = "│ "
+      + padEndWidth(messages.statsHeaders.metric, STAT_LABEL_WIDTH)
+      + " │ "
+      + padStartWidth(messages.statsHeaders.mean, STAT_VALUE_WIDTH)
+      + " │ "
+      + padStartWidth(messages.statsHeaders.p50, STAT_VALUE_WIDTH)
+      + " │ "
+      + padStartWidth(messages.statsHeaders.p95, STAT_VALUE_WIDTH)
+      + " │ "
+      + padStartWidth(messages.statsHeaders.p99, STAT_VALUE_WIDTH)
+      + " │ "
+      + padStartWidth(messages.statsHeaders.min, STAT_VALUE_WIDTH)
+      + " │ "
+      + padStartWidth(messages.statsHeaders.max, STAT_VALUE_WIDTH)
+      + " │";
 
   const tableWidth = stringWidth(headerRow) - 2;
   lines.push("┌" + "─".repeat(tableWidth) + "┐");
@@ -201,8 +202,8 @@ export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG):
       stats.percentiles.ttft.p99,
       stats.min.ttft,
       stats.max.ttft,
-      "f"
-    )
+      "f",
+    ),
   );
   lines.push("├" + "─".repeat(tableWidth) + "┤");
 
@@ -216,8 +217,8 @@ export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG):
       stats.percentiles.totalTime.p99,
       stats.min.totalTime,
       stats.max.totalTime,
-      "f"
-    )
+      "f",
+    ),
   );
   lines.push("├" + "─".repeat(tableWidth) + "┤");
 
@@ -231,8 +232,8 @@ export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG):
       stats.percentiles.totalTokens.p99,
       stats.min.totalTokens,
       stats.max.totalTokens,
-      "f"
-    )
+      "f",
+    ),
   );
   lines.push("├" + "─".repeat(tableWidth) + "┤");
 
@@ -246,8 +247,8 @@ export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG):
       stats.percentiles.averageSpeed.p99,
       stats.min.averageSpeed,
       stats.max.averageSpeed,
-      "f"
-    )
+      "f",
+    ),
   );
   lines.push("├" + "─".repeat(tableWidth) + "┤");
 
@@ -261,8 +262,8 @@ export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG):
       stats.percentiles.peakSpeed.p99,
       stats.min.peakSpeed,
       stats.max.peakSpeed,
-      "f"
-    )
+      "f",
+    ),
   );
 
   lines.push("├" + "─".repeat(tableWidth) + "┤");
@@ -277,8 +278,8 @@ export function renderStatsTable(stats: StatsResult, lang: Lang = DEFAULT_LANG):
       stats.percentiles.peakTps.p99,
       stats.min.peakTps,
       stats.max.peakTps,
-      "f"
-    )
+      "f",
+    ),
   );
 
   lines.push("└" + "─".repeat(tableWidth) + "┘");
@@ -297,26 +298,26 @@ function formatStatRow(
   p99: number,
   min: number,
   max: number,
-  format: "f" | "d"
+  format: "f" | "d",
 ): string {
   const fmt = (n: number) => (format === "f" ? n.toFixed(2) : n.toFixed(0));
 
   return (
-    "│ " +
-    padEndWidth(label, STAT_LABEL_WIDTH) +
-    " │ " +
-    padStartWidth(fmt(mean), STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(fmt(p50), STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(fmt(p95), STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(fmt(p99), STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(fmt(min), STAT_VALUE_WIDTH) +
-    " │ " +
-    padStartWidth(fmt(max), STAT_VALUE_WIDTH) +
-    " │"
+    "│ "
+    + padEndWidth(label, STAT_LABEL_WIDTH)
+    + " │ "
+    + padStartWidth(fmt(mean), STAT_VALUE_WIDTH)
+    + " │ "
+    + padStartWidth(fmt(p50), STAT_VALUE_WIDTH)
+    + " │ "
+    + padStartWidth(fmt(p95), STAT_VALUE_WIDTH)
+    + " │ "
+    + padStartWidth(fmt(p99), STAT_VALUE_WIDTH)
+    + " │ "
+    + padStartWidth(fmt(min), STAT_VALUE_WIDTH)
+    + " │ "
+    + padStartWidth(fmt(max), STAT_VALUE_WIDTH)
+    + " │"
   );
 }
 
@@ -336,7 +337,7 @@ function formatTimeWithDecimals(ms: number): string {
 export function renderSingleResult(
   metrics: CalculatedMetrics,
   runIndex: number,
-  lang: Lang = DEFAULT_LANG
+  lang: Lang = DEFAULT_LANG,
 ): string {
   const messages = getMessages(lang);
   const lines: string[] = [];
@@ -345,7 +346,7 @@ export function renderSingleResult(
   lines.push(`  ${messages.resultLabels.totalTime}: ${formatTimeWithDecimals(metrics.totalTime)}`);
   lines.push(`  ${messages.resultLabels.totalTokens}: ${metrics.totalTokens}`);
   lines.push(
-    `  ${messages.resultLabels.averageSpeed}: ${metrics.averageSpeed.toFixed(2)} tokens/s`
+    `  ${messages.resultLabels.averageSpeed}: ${metrics.averageSpeed.toFixed(2)} tokens/s`,
   );
   lines.push(`  ${messages.resultLabels.peakSpeed}: ${metrics.peakSpeed.toFixed(2)} tokens/s`);
   lines.push(`  ${messages.resultLabels.peakTps}: ${metrics.peakTps.toFixed(2)} tokens/s`);

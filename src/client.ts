@@ -1,9 +1,9 @@
+import type { Config } from "./config.js";
+import type { StreamMetrics } from "./metrics.js";
 import { performance } from "node:perf_hooks";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
-import type { Config } from "./config.js";
 import { getMessages } from "./i18n.js";
-import type { StreamMetrics } from "./metrics.js";
 import { createTokenizer } from "./tokenizer.js";
 
 /**
@@ -59,12 +59,14 @@ export async function anthropicStreamTest(config: Config): Promise<StreamMetrics
         }
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) {
       throw new Error(`Anthropic API error: ${error.message}`);
     }
     throw error;
-  } finally {
+  }
+  finally {
     if (wroteOutput) {
       process.stdout.write("\n");
     }
@@ -137,12 +139,14 @@ export async function openaiStreamTest(config: Config): Promise<StreamMetrics> {
         }
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) {
       throw new Error(`OpenAI API error: ${error.message}`);
     }
     throw error;
-  } finally {
+  }
+  finally {
     if (wroteOutput) {
       process.stdout.write("\n");
     }
@@ -166,7 +170,8 @@ export async function openaiStreamTest(config: Config): Promise<StreamMetrics> {
 export async function streamTest(config: Config): Promise<StreamMetrics> {
   if (config.provider === "anthropic") {
     return anthropicStreamTest(config);
-  } else {
+  }
+  else {
     return openaiStreamTest(config);
   }
 }
