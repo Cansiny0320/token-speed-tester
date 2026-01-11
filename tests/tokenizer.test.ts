@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createTokenizer } from "../src/tokenizer.js";
 
 const mockEncoding = { encode: vi.fn(), free: vi.fn() };

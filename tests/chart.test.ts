@@ -1,12 +1,12 @@
-import { describe, it, expect } from "vitest";
+import type { CalculatedMetrics, StatsResult } from "../src/metrics.js";
+import { describe, expect, it } from "vitest";
 import {
-  renderSpeedChart,
-  renderTPSHistogram,
-  renderStatsTable,
-  renderSingleResult,
   renderReport,
+  renderSingleResult,
+  renderSpeedChart,
+  renderStatsTable,
+  renderTPSHistogram,
 } from "../src/chart.js";
-import type { StatsResult, CalculatedMetrics } from "../src/metrics.js";
 
 describe("chart", () => {
   const mockStatsResult: StatsResult = {

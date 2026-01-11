@@ -1,9 +1,9 @@
+import type { Config } from "./config.js";
+import type { Lang, Messages } from "./i18n.js";
+import type { CalculatedMetrics, StatsResult } from "./metrics.js";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Config } from "./config.js";
-import type { CalculatedMetrics, StatsResult } from "./metrics.js";
-import type { Lang, Messages } from "./i18n.js";
 
 const CHART_COLORS = [
   "#00f5ff", // cyan
@@ -68,10 +68,10 @@ function escapeHtml(text: string): string {
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
-    '"': "&quot;",
+    "\"": "&quot;",
     "'": "&#039;",
   };
-  return text.replace(/[&<>"']/g, (m) => map[m]);
+  return text.replace(/[&<>"']/g, m => map[m]);
 }
 
 function loadTemplate(): string {
@@ -89,13 +89,13 @@ function replaceTemplate(template: string, data: TemplateData): string {
 }
 
 function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): string {
-  const allTps = results.flatMap((r) => r.tps);
+  const allTps = results.flatMap(r => r.tps);
   if (allTps.length === 0) {
     return `<div class="no-data">${messages.noChartData || "No data available"}</div>`;
   }
 
   const maxTps = Math.max(...allTps, 1);
-  const maxDuration = Math.max(...results.map((r) => r.tps.length));
+  const maxDuration = Math.max(...results.map(r => r.tps.length));
   const width = 800;
   const height = 320;
   const padding = { top: 30, right: 30, bottom: 45, left: 55 };
@@ -104,7 +104,7 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
 
   const avgTps: number[] = [];
   for (let i = 0; i < maxDuration; i++) {
-    const values = results.map((r) => r.tps[i] ?? 0);
+    const values = results.map(r => r.tps[i] ?? 0);
     avgTps.push(values.reduce((a, b) => a + b, 0) / values.length);
   }
 
@@ -177,12 +177,12 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
     const value = Math.round((maxTps * i) / 5);
     const y = padding.top + chartHeight - (i / 5) * chartHeight;
     yLabels.push(
-      `<text x="${padding.left - 12}" y="${y + 4}" text-anchor="end" font-size="11" fill="${PALETTE.textMuted}">${value}</text>`
+      `<text x="${padding.left - 12}" y="${y + 4}" text-anchor="end" font-size="11" fill="${PALETTE.textMuted}">${value}</text>`,
     );
     if (i > 0) {
       const yLine = padding.top + chartHeight - (i / 5) * chartHeight;
       yLabels.push(
-        `<line x1="${padding.left}" y1="${yLine}" x2="${width - padding.right}" y2="${yLine}" stroke="${PALETTE.border}" stroke-width="1" opacity="0.5"/>`
+        `<line x1="${padding.left}" y1="${yLine}" x2="${width - padding.right}" y2="${yLine}" stroke="${PALETTE.border}" stroke-width="1" opacity="0.5"/>`,
       );
     }
   }
@@ -193,7 +193,7 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
     const x = padding.left + (i / Math.max(xSteps - 1, 1)) * chartWidth;
     const label = i.toString();
     xLabels.push(
-      `<text x="${x}" y="${height - padding.bottom + 20}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlTimeUnit}</text>`
+      `<text x="${x}" y="${height - padding.bottom + 20}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlTimeUnit}</text>`,
     );
   }
 
@@ -306,7 +306,7 @@ function generateTPSHistogram(stats: StatsResult, messages: Messages): string {
     const value = Math.round((maxTps * i) / 5);
     const y = padding.top + chartHeight - (i / 5) * chartHeight;
     yLabels.push(
-      `<text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" font-size="11" fill="${PALETTE.textMuted}">${value}</text>`
+      `<text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" font-size="11" fill="${PALETTE.textMuted}">${value}</text>`,
     );
   }
 
@@ -316,7 +316,7 @@ function generateTPSHistogram(stats: StatsResult, messages: Messages): string {
     const x = padding.left + (i / Math.max(xSteps - 1, 1)) * chartWidth;
     const label = i.toString();
     xLabels.push(
-      `<text x="${x}" y="${height - padding.bottom + 18}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlTimeUnit}</text>`
+      `<text x="${x}" y="${height - padding.bottom + 18}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlTimeUnit}</text>`,
     );
   }
 
@@ -383,7 +383,7 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           <td>${formatNumber(result.peakSpeed)}</td>
           <td>${result.peakTps}</td>
         </tr>
-      `
+      `,
     )
     .join("");
 
@@ -444,7 +444,7 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
     },
   ]
     .map(
-      (row) => `
+      row => `
         <tr>
           <td class="metric-name">${row.metric}</td>
           <td class="value-primary">${row.mean}</td>
@@ -454,7 +454,7 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
           <td>${row.min}</td>
           <td>${row.max}</td>
         </tr>
-      `
+      `,
     )
     .join("");
 
@@ -488,13 +488,13 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
 
   const summaryCardsHtml = summaryCards
     .map(
-      (card) => `
+      card => `
         <div class="card" style="--card-accent: ${card.accent}">
           <div class="card-label">${card.label}</div>
           <div class="card-value">${card.value}<span class="card-unit">${card.unit || ""}</span></div>
           <div class="card-detail">${card.detail}</div>
         </div>
-      `
+      `,
     )
     .join("");
 

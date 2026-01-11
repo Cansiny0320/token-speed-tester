@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { parseConfig, getDefaultModel, validateConfig } from "../src/config.js";
-import type { Provider, Config, OutputFormat } from "../src/config.js";
+import type { Config, OutputFormat, Provider } from "../src/config.js";
+import { describe, expect, it } from "vitest";
+import { getDefaultModel, parseConfig, validateConfig } from "../src/config.js";
 
 describe("config", () => {
   const VALID_API_KEY = "sk-test-api-key-12345";
@@ -121,7 +121,7 @@ describe("config", () => {
       expect(() =>
         parseConfig({
           apiKey: "",
-        })
+        }),
       ).toThrow("API Key is required");
     });
 
@@ -129,7 +129,7 @@ describe("config", () => {
       expect(() =>
         parseConfig({
           apiKey: "   ",
-        })
+        }),
       ).toThrow("API Key is required");
     });
 
@@ -138,7 +138,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           provider: "invalid" as Provider,
-        })
+        }),
       ).toThrow("Invalid provider: invalid. Must be 'anthropic' or 'openai'.");
     });
 
@@ -147,7 +147,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           lang: "jp",
-        })
+        }),
       ).toThrow("Invalid lang: jp. Must be 'zh' or 'en'.");
     });
 
@@ -156,7 +156,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           maxTokens: -100,
-        })
+        }),
       ).toThrow("Invalid max-tokens: -100. Must be a positive integer.");
     });
 
@@ -165,7 +165,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           maxTokens: 0,
-        })
+        }),
       ).toThrow("Invalid max-tokens: 0. Must be a positive integer.");
     });
 
@@ -174,7 +174,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           maxTokens: 1.5,
-        })
+        }),
       ).toThrow("Invalid max-tokens: 1.5. Must be a positive integer.");
     });
 
@@ -183,7 +183,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           maxTokens: Number.NaN,
-        })
+        }),
       ).toThrow("Invalid max-tokens: NaN. Must be a positive integer.");
     });
 
@@ -192,7 +192,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           runs: -1,
-        })
+        }),
       ).toThrow("Invalid runs: -1. Must be a positive integer.");
     });
 
@@ -201,7 +201,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           runs: 0,
-        })
+        }),
       ).toThrow("Invalid runs: 0. Must be a positive integer.");
     });
 
@@ -210,7 +210,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           runs: 2.5,
-        })
+        }),
       ).toThrow("Invalid runs: 2.5. Must be a positive integer.");
     });
 
@@ -219,7 +219,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           runs: Number.NaN,
-        })
+        }),
       ).toThrow("Invalid runs: NaN. Must be a positive integer.");
     });
 
@@ -254,7 +254,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           maxTokens: "2048" as unknown as number,
-        })
+        }),
       ).toThrow("Invalid max-tokens: 2048. Must be a positive integer.");
     });
 
@@ -263,7 +263,7 @@ describe("config", () => {
         parseConfig({
           apiKey: VALID_API_KEY,
           runs: "5" as unknown as number,
-        })
+        }),
       ).toThrow("Invalid runs: 5. Must be a positive integer.");
     });
   });

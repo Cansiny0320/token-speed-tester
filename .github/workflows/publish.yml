@@ -2,101 +2,14 @@ name: Release
 
 on:
   push:
-    branches:
-      - master
-
-permissions:
-  contents: write
-  id-token: write
+    tags:
+      - 'v*'
 
 jobs:
   release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Update npm to latest
-        run: npm install -g npm@latest
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Run tests
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
-
-      - name: Get current version from npm
-        id: npm-version
-        continue-on-error: true
-        run: |
-          VERSION=$(npm view token-speed-tester version 2>/dev/null || echo "0.0.0")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Run semantic-release
-        id: release
-        run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
-
-      - name: Get new version
-        id: new-version
-        run: |
-          # Fetch all tags from remote
-          git fetch --tags
-          # Get the latest tag
-          NEW_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "none")
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Publish to npm
-        if: steps.new-version.outputs.version != 'none' && steps.new-version.outputs.version != steps.npm-version.outputs.version
-        run: npm publish
-        env:
-          NPM_CONFIG_PROVENANCE: true
-
-      - name: Extract changelog for this version
-        if: steps.new-version.outputs.version != 'none' && steps.new-version.outputs.version != steps.npm-version.outputs.version
-        id: changelog
-        run: |
-          VERSION="${{ steps.new-version.outputs.version }}"
-          # Extract content from CHANGELOG.md between this version and the next version header
-          # Using awk to find the version section
-          awk "
-            /^##?\s+\[$VERSION/ { in_section=1; next }
-            in_section && /^##?\s+\[/ { exit }
-            in_section { print }
-          " CHANGELOG.md > release_notes.md
-          # If file is empty, use default message
-          if [ ! -s release_notes.md ]; then
-            echo "See [Full Changelog](https://github.com/Cansiny0320/token-speed-tester/compare/v\${VERSION}...v\${VERSION})" > release_notes.md
-          fi
-
-      - name: Create GitHub Release
-        if: steps.new-version.outputs.version != 'none' && steps.new-version.outputs.version != steps.npm-version.outputs.version
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.new-version.outputs.version }}
-          body_path: release_notes.md
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: sxzz/workflows/.github/workflows/release.yml@v1
+    with:
+      publish: true
+    permissions:
+      contents: write
+      id-token: write

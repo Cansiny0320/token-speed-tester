@@ -3,31 +3,18 @@
   "version": "1.11.0",
   "description": "A CLI tool to test LLM API token output speed",
   "type": "module",
-  "main": "dist/index.js",
-  "bin": {
-    "token-speed-test": "dist/index.js"
+  "packageManager": "pnpm@10.25.0",
+  "author": "Cansiny0320",
+  "license": "MIT",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cansiny0320/token-speed-tester.git"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "README.en.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "build": "tsup && tsc --noEmit",
-    "dev": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "test": "vitest --run",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --run --coverage",
-    "test:watch": "vitest",
-    "prepublishOnly": "npm run build",
-    "prepare": "husky"
+  "bugs": {
+    "url": "https://github.com/Cansiny0320/token-speed-tester/issues"
   },
+  "homepage": "https://github.com/Cansiny0320/token-speed-tester#readme",
   "keywords": [
     "llm",
     "token",
@@ -37,16 +24,40 @@
     "openai",
     "cli"
   ],
-  "author": "Cansiny0320",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Cansiny0320/token-speed-tester.git"
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
   },
-  "bugs": {
-    "url": "https://github.com/Cansiny0320/token-speed-tester/issues"
+  "bin": {
+    "token-speed-test": "dist/index.mjs"
   },
-  "homepage": "https://github.com/Cansiny0320/token-speed-tester#readme",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsdown && node scripts/copy-assets.mjs",
+    "dev": "tsx src/index.ts",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "prepublishOnly": "nr build",
+    "release": "bumpp",
+    "start": "node dist/index.mjs",
+    "test": "vitest --run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --run --coverage",
+    "test:watch": "vitest",
+    "typecheck": "tsc",
+    "prepare": "simple-git-hooks"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
     "chalk": "^5.4.1",
@@ -57,36 +68,27 @@
     "tiktoken": "^1.0.22"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/npm": "^13.1.3",
+    "@antfu/eslint-config": "^6.6.1",
+    "@antfu/ni": "^28.0.0",
     "@types/node": "^22.10.6",
-    "@vitest/coverage-v8": "^2.1.8",
-    "@vitest/ui": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/ui": "^2.1.9",
+    "bumpp": "^10.3.2",
     "eslint": "^9.39.2",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.7.4",
-    "semantic-release": "^25.0.2",
-    "tsup": "^8.5.1",
+    "simple-git-hooks": "^2.13.1",
+    "tsdown": "^0.17.3",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.52.0",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.9"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm i --frozen-lockfile --ignore-scripts --offline && npx lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "lint-staged": {
-    "*.{ts,js}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
   }
 }
