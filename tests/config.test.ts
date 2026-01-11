@@ -6,14 +6,14 @@ describe("config", () => {
   const VALID_API_KEY = "sk-test-api-key-12345";
 
   describe("parseConfig", () => {
-    it("should parse valid Anthropic config with minimal args", () => {
+    it("should parse valid OpenAI config with minimal args", () => {
       const result = parseConfig({
         apiKey: VALID_API_KEY,
       });
 
-      expect(result.provider).toBe("anthropic");
+      expect(result.provider).toBe("openai");
       expect(result.apiKey).toBe(VALID_API_KEY);
-      expect(result.model).toBe("claude-opus-4-5-20251101");
+      expect(result.model).toBe("gpt-5.2");
       expect(result.maxTokens).toBe(1024);
       expect(result.runCount).toBe(3);
       expect(result.prompt).toBe("写一篇关于 AI 的短文");

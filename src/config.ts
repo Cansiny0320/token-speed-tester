@@ -42,7 +42,7 @@ const DEFAULT_RUNS = 3;
 export function parseConfig(args: ParsedArgs): Config {
   const {
     apiKey,
-    provider = "anthropic",
+    provider = "openai",
     url,
     model,
     maxTokens = DEFAULT_MAX_TOKENS,

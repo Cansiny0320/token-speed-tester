@@ -54,12 +54,12 @@ npm install token-speed-tester
 ### Basic Usage
 
 ```bash
-# Test Anthropic API (default)
-token-speed-test --api-key sk-ant-xxx
+# Test OpenAI API (default)
+token-speed-test --api-key sk-xxx
 # English output
-token-speed-test --api-key sk-ant-xxx --lang en
-# Test OpenAI API
-token-speed-test --api-key sk-xxx --provider openai
+token-speed-test --api-key sk-xxx --lang en
+# Test Anthropic API
+token-speed-test --api-key sk-ant-xxx --provider anthropic
 ```
 
 ### Advanced Options
@@ -130,7 +130,7 @@ node dist/index.js --api-key sk-ant-xxx
 | Option            | Short | Description                                   | Default                   |
 | ----------------- | ----- | --------------------------------------------- | ------------------------- |
 | `--api-key`       | `-k`  | API Key (required)                            | -                         |
-| `--provider`      | `-p`  | API type: `anthropic` or `openai`             | `anthropic`               |
+| `--provider`      | `-p`  | API type: `anthropic` or `openai`             | `openai`                  |
 | `--model`         | `-m`  | Model name                                    | Auto-selected by provider |
 | `--url`           | `-u`  | Custom API endpoint                           | Official endpoint         |
 | `--runs`          | `-r`  | Number of test runs                           | `3`                       |
@@ -152,8 +152,8 @@ Note: The default prompt follows the selected language. Use `--lang en` for the 
 ```
 Token Speed Test
 --------------------------------------------------
-Provider: anthropic
-Model: claude-opus-4-5-20251101
+Provider: openai
+Model: gpt-5.2
 Max Tokens: 1024
 Runs: 3
 Prompt: Write a short essay about AI
