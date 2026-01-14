@@ -32,7 +32,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "token-speed-test": "dist/index.mjs"
+    "token-speed-tester": "dist/index.mjs"
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
