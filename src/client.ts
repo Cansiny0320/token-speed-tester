@@ -6,63 +6,111 @@ import OpenAI from "openai";
 import { getMessages } from "./i18n.js";
 import { createTokenizer } from "./tokenizer.js";
 
-/**
- * 执行 Anthropic API 流式测试
- */
-export async function anthropicStreamTest(config: Config): Promise<StreamMetrics> {
-  const startTime = performance.now();
+interface StreamResult {
+  ttft: number;
+  tokens: number[];
+  totalTokens: number;
+  totalTime: number;
+}
+
+interface StreamProcessor {
+  stream: () => AsyncIterable<{ text: string }>;
+  providerName: string;
+}
+
+class AnthropicStreamProcessor implements StreamProcessor {
+  providerName = "Anthropic" as const;
+
+  constructor(
+    private client: Anthropic,
+    private config: Config,
+  ) {}
+
+  async* stream(): AsyncIterable<{ text: string }> {
+    const stream = await this.client.messages.create({
+      model: this.config.model,
+      max_tokens: this.config.maxTokens,
+      messages: [{ role: "user", content: this.config.prompt }],
+      stream: true,
+    });
+
+    for await (const event of stream) {
+      if (
+        event.type === "content_block_delta"
+        && event.delta.type === "text_delta"
+        && event.delta.text
+      ) {
+        yield { text: event.delta.text };
+      }
+    }
+  }
+}
+
+class OpenAIStreamProcessor implements StreamProcessor {
+  providerName = "OpenAI" as const;
+
+  constructor(
+    private client: OpenAI,
+    private config: Config,
+  ) {}
+
+  async* stream(): AsyncIterable<{ text: string }> {
+    const stream = await this.client.chat.completions.create({
+      model: this.config.model,
+      max_tokens: this.config.maxTokens,
+      messages: [{ role: "user", content: this.config.prompt }],
+      stream: true,
+    });
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta;
+      if (delta?.content) {
+        yield { text: delta.content };
+      }
+    }
+  }
+}
+
+async function runStreamTest(
+  processor: StreamProcessor,
+  startTime: number,
+  encoding: ReturnType<typeof createTokenizer>,
+): Promise<StreamResult> {
   const tokenTimes: number[] = [];
   let ttft = 0;
   let firstTokenRecorded = false;
   let tokenCount = 0;
   let wroteOutput = false;
 
-  const encoding = createTokenizer(config.model);
-  const client = new Anthropic({
-    apiKey: config.apiKey,
-    baseURL: config.baseURL,
-  });
-
   try {
-    const stream = await client.messages.create({
-      model: config.model,
-      max_tokens: config.maxTokens,
-      messages: [{ role: "user", content: config.prompt }],
-      stream: true,
-    });
+    for await (const { text } of processor.stream()) {
+      if (text.length > 0) {
+        process.stdout.write(text);
+        wroteOutput = true;
 
-    for await (const event of stream) {
-      const currentTime = performance.now();
+        const encoded = encoding.encode(text);
+        const newTokens = encoded.length;
 
-      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-        const text = event.delta.text;
+        if (newTokens > 0) {
+          const currentTime = performance.now();
 
-        if (text && text.length > 0) {
-          process.stdout.write(text);
-          wroteOutput = true;
-          const encoded = encoding.encode(text);
-          const newTokens = encoded.length;
-
-          if (newTokens > 0) {
-            if (!firstTokenRecorded) {
-              ttft = currentTime - startTime;
-              firstTokenRecorded = true;
-            }
-
-            // 为当前批次的新增 token 记录到达时间
-            for (let i = 0; i < newTokens; i++) {
-              tokenTimes.push(currentTime - startTime);
-            }
-
-            tokenCount += newTokens;
+          if (!firstTokenRecorded) {
+            ttft = currentTime - startTime;
+            firstTokenRecorded = true;
           }
+
+          for (let i = 0; i < newTokens; i++) {
+            tokenTimes.push(currentTime - startTime);
+          }
+
+          tokenCount += newTokens;
         }
       }
     }
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Anthropic API error: ${error.message}`);
+      throw new Error(`${processor.providerName} API error: ${error.message}`);
     }
     throw error;
   }
@@ -74,14 +122,28 @@ export async function anthropicStreamTest(config: Config): Promise<StreamMetrics
   }
 
   const endTime = performance.now();
-  const totalTime = endTime - startTime;
 
   return {
     ttft,
     tokens: tokenTimes,
     totalTokens: tokenCount,
-    totalTime,
+    totalTime: endTime - startTime,
   };
+}
+
+/**
+ * 执行 Anthropic API 流式测试
+ */
+export async function anthropicStreamTest(config: Config): Promise<StreamMetrics> {
+  const startTime = performance.now();
+  const encoding = createTokenizer(config.model);
+  const client = new Anthropic({
+    apiKey: config.apiKey,
+    baseURL: config.baseURL,
+  });
+
+  const processor = new AnthropicStreamProcessor(client, config);
+  return runStreamTest(processor, startTime, encoding);
 }
 
 /**
@@ -89,79 +151,14 @@ export async function anthropicStreamTest(config: Config): Promise<StreamMetrics
  */
 export async function openaiStreamTest(config: Config): Promise<StreamMetrics> {
   const startTime = performance.now();
-  const tokenTimes: number[] = [];
-  let ttft = 0;
-  let firstTokenRecorded = false;
-  let tokenCount = 0;
-  let wroteOutput = false;
-
   const encoding = createTokenizer(config.model);
   const client = new OpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseURL,
   });
 
-  try {
-    const stream = await client.chat.completions.create({
-      model: config.model,
-      max_tokens: config.maxTokens,
-      messages: [{ role: "user", content: config.prompt }],
-      stream: true,
-    });
-
-    for await (const chunk of stream) {
-      const currentTime = performance.now();
-
-      const delta = chunk.choices[0]?.delta;
-
-      if (delta?.content) {
-        const content = delta.content;
-
-        if (content.length > 0) {
-          process.stdout.write(content);
-          wroteOutput = true;
-          const encoded = encoding.encode(content);
-          const newTokens = encoded.length;
-
-          if (newTokens > 0) {
-            if (!firstTokenRecorded) {
-              ttft = currentTime - startTime;
-              firstTokenRecorded = true;
-            }
-
-            // 为当前批次的新增 token 记录到达时间
-            for (let i = 0; i < newTokens; i++) {
-              tokenTimes.push(currentTime - startTime);
-            }
-
-            tokenCount += newTokens;
-          }
-        }
-      }
-    }
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`OpenAI API error: ${error.message}`);
-    }
-    throw error;
-  }
-  finally {
-    if (wroteOutput) {
-      process.stdout.write("\n");
-    }
-    encoding.free();
-  }
-
-  const endTime = performance.now();
-  const totalTime = endTime - startTime;
-
-  return {
-    ttft,
-    tokens: tokenTimes,
-    totalTokens: tokenCount,
-    totalTime,
-  };
+  const processor = new OpenAIStreamProcessor(client, config);
+  return runStreamTest(processor, startTime, encoding);
 }
 
 /**

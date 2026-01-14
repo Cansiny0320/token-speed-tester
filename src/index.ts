@@ -96,43 +96,43 @@ async function main() {
     const stats = calculateStats(allMetrics);
 
     // 根据输出格式处理结果
-    if (config.outputFormat === "terminal") {
-      // 显示每次运行的结果
-      for (let i = 0; i < allMetrics.length; i++) {
-        console.log(chalk.gray(renderSingleResult(allMetrics[i], i, config.lang)));
+    switch (config.outputFormat) {
+      case "terminal": {
+        for (let i = 0; i < allMetrics.length; i++) {
+          console.log(chalk.gray(renderSingleResult(allMetrics[i], i, config.lang)));
+        }
+        console.log(chalk.cyan("\n" + renderReport(stats, config.lang)));
+        break;
       }
-
-      // 显示报告
-      console.log(chalk.cyan("\n" + renderReport(stats, config.lang)));
-    }
-    else if (config.outputFormat === "json") {
-      const jsonContent = generateJSONExport(config, allMetrics, stats);
-      await fsWriteFile(config.outputPath, jsonContent, "utf-8");
-      console.log(chalk.cyan(`\n✓ JSON report generated: ${config.outputPath}\n`));
-    }
-    else if (config.outputFormat === "csv") {
-      const csvContent = generateCSVExport(config, allMetrics, stats);
-      await fsWriteFile(config.outputPath, csvContent, "utf-8");
-      console.log(chalk.cyan(`\n✓ CSV report generated: ${config.outputPath}\n`));
-    }
-    else if (config.outputFormat === "html") {
-      const htmlContent = generateHTMLReport({
-        config,
-        singleResults: allMetrics,
-        stats,
-        lang: config.lang,
-        messages,
-      });
-
-      await fsWriteFile(config.outputPath, htmlContent, "utf-8");
-      console.log(chalk.cyan(`\n✓ HTML report generated: ${config.outputPath}\n`));
-
-      // 自动打开浏览器
-      await open(config.outputPath).catch(() => {
-        console.warn(
-          chalk.yellow(`Could not auto-open report, please open manually: ${config.outputPath}`),
-        );
-      });
+      case "json": {
+        const jsonContent = generateJSONExport(config, allMetrics, stats);
+        await fsWriteFile(config.outputPath, jsonContent, "utf-8");
+        console.log(chalk.cyan(`\n✓ JSON report generated: ${config.outputPath}\n`));
+        break;
+      }
+      case "csv": {
+        const csvContent = generateCSVExport(config, allMetrics, stats);
+        await fsWriteFile(config.outputPath, csvContent, "utf-8");
+        console.log(chalk.cyan(`\n✓ CSV report generated: ${config.outputPath}\n`));
+        break;
+      }
+      case "html": {
+        const htmlContent = generateHTMLReport({
+          config,
+          singleResults: allMetrics,
+          stats,
+          lang: config.lang,
+          messages,
+        });
+        await fsWriteFile(config.outputPath, htmlContent, "utf-8");
+        console.log(chalk.cyan(`\n✓ HTML report generated: ${config.outputPath}\n`));
+        await open(config.outputPath).catch(() => {
+          console.warn(
+            chalk.yellow(`Could not auto-open report, please open manually: ${config.outputPath}`),
+          );
+        });
+        break;
+      }
     }
 
     console.log(chalk.green(`${messages.testComplete}\n`));

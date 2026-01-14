@@ -50,13 +50,6 @@ export interface StatsResult {
 }
 
 /**
- * 计算 TTFT (Time to First Token)
- */
-export function calculateTTFT(metrics: StreamMetrics): number {
-  return metrics.ttft;
-}
-
-/**
  * 计算平均速度 (tokens/s)
  */
 export function calculateAverageSpeed(metrics: StreamMetrics): number {
@@ -129,7 +122,7 @@ export function calculateTPS(metrics: StreamMetrics): number[] {
 export function calculateMetrics(metrics: StreamMetrics): CalculatedMetrics {
   const tps = calculateTPS(metrics);
   return {
-    ttft: calculateTTFT(metrics),
+    ttft: metrics.ttft,
     totalTime: metrics.totalTime,
     totalTokens: metrics.totalTokens,
     averageSpeed: calculateAverageSpeed(metrics),
@@ -137,6 +130,30 @@ export function calculateMetrics(metrics: StreamMetrics): CalculatedMetrics {
     peakTps: tps.length > 0 ? Math.max(...tps) : 0,
     tps,
   };
+}
+
+/**
+ * 计算 TTFT (Time to First Token)
+ */
+export function calculateTTFT(metrics: StreamMetrics): number {
+  return metrics.ttft;
+}
+
+/**
+ * 格式化速度显示
+ */
+export function formatSpeed(tokensPerSecond: number): string {
+  return tokensPerSecond.toFixed(2);
+}
+
+/**
+ * 格式化时间显示
+ */
+export function formatTime(ms: number): string {
+  if (ms < 1000) {
+    return `${ms.toFixed(0)}ms`;
+  }
+  return `${(ms / 1000).toFixed(2)}s`;
 }
 
 /**
@@ -268,21 +285,4 @@ export function calculateStats(allMetrics: CalculatedMetrics[]): StatsResult {
     },
     sampleSize,
   };
-}
-
-/**
- * 格式化速度显示
- */
-export function formatSpeed(tokensPerSecond: number): string {
-  return tokensPerSecond.toFixed(2);
-}
-
-/**
- * 格式化时间显示
- */
-export function formatTime(ms: number): string {
-  if (ms < 1000) {
-    return `${ms.toFixed(0)}ms`;
-  }
-  return `${(ms / 1000).toFixed(2)}s`;
 }
