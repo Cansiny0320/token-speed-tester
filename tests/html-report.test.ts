@@ -249,8 +249,8 @@ describe("html-report", () => {
       });
 
       expect(result).toContain("<style>");
-      expect(result).toContain("--bg:");
-      expect(result).toContain("--accent:");
+      expect(result).toContain("--bg-primary:");
+      expect(result).toContain("--accent-cyan:");
       expect(result).toContain("font-family:");
     });
 
@@ -471,8 +471,8 @@ describe("html-report", () => {
 
       // Should include light theme CSS variables
       expect(result).toContain("[data-theme=\"light\"]");
-      expect(result).toContain("--scan-line-opacity");
-      expect(result).toContain("--grid-line-opacity");
+      expect(result).toContain("--bg-glass:");
+      expect(result).toContain("--border-subtle:");
 
       // Should include theme toggle script
       expect(result).toMatch(/localStorage\.getItem\((['"])theme\1\)/);
