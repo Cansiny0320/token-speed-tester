@@ -55,25 +55,25 @@ npm install token-speed-tester
 
 ```bash
 # Test OpenAI API (default)
-token-speed-test --api-key sk-xxx
+token-speed-tester --api-key sk-xxx
 # English output
-token-speed-test --api-key sk-xxx --lang en
+token-speed-tester --api-key sk-xxx --lang en
 # Test Anthropic API
-token-speed-test --api-key sk-ant-xxx --provider anthropic
+token-speed-tester --api-key sk-ant-xxx --provider anthropic
 ```
 
 ### Advanced Options
 
 ```bash
 # Custom model and multiple test runs
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --provider anthropic \
   --model claude-opus-4-5-20251101 \
   --runs 5
 
 # Test with custom endpoint and prompt
-token-speed-test \
+token-speed-tester \
   --api-key sk-xxx \
   --provider openai \
   --url https://api.example.com/v1 \
@@ -83,25 +83,25 @@ token-speed-test \
   --runs 10
 
 # Generate HTML report (with SVG charts)
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --output-format html \
   --output my-report.html
 
 # Generate JSON report
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --output-format json \
   --output report.json
 
 # Generate CSV report
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --output-format csv \
   --output report.csv
 
 # Combined: Generate English HTML report
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --runs 5 \
   --output-format html \
@@ -118,11 +118,11 @@ cd token-speed-tester
 npm install
 
 # Run directly with tsx
-npm run dev -- --api-key sk-ant-xxx
+npm run dev -- --api-key=sk-ant-xxx
 
 # Or build and run
 npm run build
-node dist/index.js --api-key sk-ant-xxx
+node dist/index.mjs --api-key=sk-ant-xxx
 ```
 
 ## Command Line Options
