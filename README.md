@@ -55,26 +55,26 @@ npm install token-speed-tester
 
 ```bash
 # 测试 OpenAI API（默认）
-token-speed-test --api-key sk-xxx
+token-speed-tester --api-key sk-xxx
 # 输出英文结果
-token-speed-test --api-key sk-xxx --lang en
+token-speed-tester --api-key sk-xxx --lang en
 
 # 测试 Anthropic API
-token-speed-test --api-key sk-ant-xxx --provider anthropic
+token-speed-tester --api-key sk-ant-xxx --provider anthropic
 ```
 
 ### 高级选项
 
 ```bash
 # 自定义模型和多次测试
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --provider anthropic \
   --model claude-opus-4-5-20251101 \
   --runs 5
 
 # 测试自定义端点和提示词
-token-speed-test \
+token-speed-tester \
   --api-key sk-xxx \
   --provider openai \
   --url https://api.example.com/v1 \
@@ -84,25 +84,25 @@ token-speed-test \
   --runs 10
 
 # 生成 HTML 报告（包含 SVG 图表）
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --output-format html \
   --output my-report.html
 
 # 生成 JSON 报告
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --output-format json \
   --output report.json
 
 # 生成 CSV 报告
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --output-format csv \
   --output report.csv
 
 # 组合使用：生成英文 HTML 报告
-token-speed-test \
+token-speed-tester \
   --api-key sk-ant-xxx \
   --runs 5 \
   --output-format html \
