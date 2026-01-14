@@ -6,7 +6,7 @@
 
 [![npm version](https://img.shields.io/npm/v/token-speed-tester)](https://www.npmjs.com/package/token-speed-tester)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/publish.yml/badge.svg)](https://github.com/Cansiny0320/token-speed-tester/actions)
+[![CI](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/ci.yml/badge.svg)](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/ci.yml)
 
 <p align="center">
   <img src="./docs/images/html-report-en.png" alt="HTML Report Preview" width="800">
@@ -253,26 +253,27 @@ npm run build
 
 ### Release
 
-This project uses [semantic-release](https://github.com/semantic-release/semantic-release) for automated versioning and publishing.
+This project publishes to npm automatically via GitHub Actions. Release process:
 
-Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) specification:
+1. Merge feature code to `master` branch
+2. Create and push version tag:
 
 ```bash
-# Patch release (1.0.0 -> 1.0.1)
-git commit -m "fix: fix some bug"
+# Patch release (bug fixes)
+git tag v1.0.1
+git push origin v1.0.1
 
-# Minor release (1.0.0 -> 1.1.0)
-git commit -m "feat: add new feature"
+# Minor release (new features)
+git tag v1.1.0
+git push origin v1.1.0
 
-# Major release (1.0.0 -> 2.0.0)
-git commit -m "feat: add breaking change\n\nBREAKING CHANGE: deprecate old API"
+# Major release (breaking changes)
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
-After pushing to `master` branch, GitHub Actions will automatically:
-
-- Analyze commit types to determine version
-- Update CHANGELOG.md
-- Create Git tag
+After pushing the tag, GitHub Actions will automatically:
+- Build the project
 - Publish to npm
 - Create GitHub Release
 
@@ -282,8 +283,8 @@ This project maintains high code coverage:
 
 | Coverage Type | Percentage |
 | ------------- | ---------- |
-| Statements    | 99.19%     |
-| Branches      | 94.73%     |
+| Statements    | 98.69%     |
+| Branches      | 93.48%     |
 | Functions     | 100%       |
 
 ## License

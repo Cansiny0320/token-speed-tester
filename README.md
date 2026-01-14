@@ -6,7 +6,7 @@
 
 [![npm version](https://img.shields.io/npm/v/token-speed-tester)](https://www.npmjs.com/package/token-speed-tester)
 [![开源协议](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![测试](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/publish.yml/badge.svg)](https://github.com/Cansiny0320/token-speed-tester/actions)
+[![CI](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/ci.yml/badge.svg)](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/ci.yml)
 
 <p align="center">
   <img src="./docs/images/html-report-zh.png" alt="HTML 报告预览" width="800">
@@ -284,26 +284,27 @@ npm run build
 
 ### 发布
 
-本项目使用 [semantic-release](https://github.com/semantic-release/semantic-release) 自动管理版本和发布。
+本项目通过 GitHub Actions 自动发布到 npm。发布流程：
 
-提交信息遵循 [约定式提交](https://www.conventionalcommits.org/zh-hans/) 规范：
+1. 合并功能代码到 `master` 分支
+2. 创建并推送版本 tag：
 
 ```bash
-# 补丁版本 (1.0.0 -> 1.0.1)
-git commit -m "fix: 修复某个问题"
+# 补丁版本 (bug 修复)
+git tag v1.0.1
+git push origin v1.0.1
 
-# 次要版本 (1.0.0 -> 1.1.0)
-git commit -m "feat: 添加新功能"
+# 次要版本 (新功能)
+git tag v1.1.0
+git push origin v1.1.0
 
-# 主要版本 (1.0.0 -> 2.0.0)
-git commit -m "feat: 添加破坏性变更\n\nBREAKING CHANGE: 废弃旧 API"
+# 主要版本 (破坏性变更)
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
-推送到 `master` 分支后，GitHub Actions 会自动：
-
-- 分析 commit 类型确定版本号
-- 更新 CHANGELOG.md
-- 创建 Git tag
+推送 tag 后，GitHub Actions 会自动：
+- 构建项目
 - 发布到 npm
 - 创建 GitHub Release
 
@@ -313,8 +314,8 @@ git commit -m "feat: 添加破坏性变更\n\nBREAKING CHANGE: 废弃旧 API"
 
 | 覆盖率类型 | 百分比 |
 | ---------- | ------ |
-| 语句覆盖率 | 99.19% |
-| 分支覆盖率 | 94.73% |
+| 语句覆盖率 | 98.69% |
+| 分支覆盖率 | 93.48% |
 | 函数覆盖率 | 100%   |
 
 ## 开源协议
