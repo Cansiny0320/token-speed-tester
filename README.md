@@ -2,7 +2,7 @@
 
 > 测量 LLM 与 Codex 的首字延迟、Token 吞吐和流式输出速度，支持 CLI、网页及 macOS / Windows / Linux 桌面端。
 
-[English](README.en.md) · [打开网页](https://token-speed-studio.cansiny0320.chatgpt.site) · [下载桌面版](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0) · [Studio 文档](docs/studio.md)
+[English](README.en.md) · [打开网页](https://token-speed-studio.cansiny0320.chatgpt.site) · [下载桌面版](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.1.0) · [Studio 文档](docs/studio.md)
 
 [![npm version](https://img.shields.io/npm/v/token-speed-tester)](https://www.npmjs.com/package/token-speed-tester)
 [![开源协议](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -20,6 +20,7 @@
 - **网页与桌面**：实时文本和 TPS 曲线；桌面版可独立运行，网页通过配对码连接本机软件。
 - **测速指标**：TTFT、平均吞吐、单秒峰值、多轮统计；Studio 单独记录初始化耗时、输出和推理用量。
 - **Codex 控制**：模型、推理强度、重复次数、超时与取消。每轮独立临时会话，禁用工具、MCP、插件和 hooks。
+- **Codex 历史分析**：读取本机会话与归档，按日期、模型、推理强度和服务档位统计，查看轮次明细并导出 JSON / CSV；不调用模型。
 - **本地报告**：JSON / CSV / HTML 导出；Studio 保留最近 6 份本地报告，并支持导入自己的 JSON 报告。失败或取消轮次不进入 Studio 汇总。
 - **CLI**：终端图表、自定义端点、中英文输出和报告；兼容原有 API 用法。
 
@@ -31,13 +32,13 @@ Codex 登录凭证留在本机，测试会消耗当前账号额度。可用模�
 
 | 系统 | 安装包 |
 | --- | --- |
-| macOS Apple Silicon | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-mac-arm64.dmg) |
-| macOS Intel | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-mac-x64.dmg) |
-| Windows x64 | [exe](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-win-x64.exe) |
-| Linux x64 · AppImage | [AppImage](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-linux-x86_64.AppImage) |
-| Debian / Ubuntu x64 | [deb](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-linux-amd64.deb) |
+| macOS Apple Silicon | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-mac-arm64.dmg) |
+| macOS Intel | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-mac-x64.dmg) |
+| Windows x64 | [exe](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-win-x64.exe) |
+| Linux x64 · AppImage | [AppImage](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-linux-x86_64.AppImage) |
+| Debian / Ubuntu x64 | [deb](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-linux-amd64.deb) |
 
-[完整发布与 ZIP 包](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0) · [SHA256SUMS.txt](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/SHA256SUMS.txt)。首版未签名或公证。macOS Apple Silicon 已完成真实测速；Intel Mac、Windows、Linux 已构建，尚未实机验收。
+[完整发布与 ZIP 包](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.1.0) · [SHA256SUMS.txt](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/SHA256SUMS.txt)。macOS 安装包未签名或公证；macOS Apple Silicon 的历史扫描已验证，Windows 与 Linux 未进行本次版本的对应系统实机验证，详见发布说明。
 
 1. 安装并打开桌面版。测试 Codex 时，先安装 Codex CLI 并执行 `codex login`；已登录的 ChatGPT 账号可直接复用。找不到可执行文件时，在软件中手动选择路径。
 2. 在桌面版选择接入方式、模型、提示词和次数，直接开始测速。API 模式填写对应的 API Key 和端点。
@@ -46,7 +47,13 @@ Codex 登录凭证留在本机，测试会消耗当前账号额度。可用模�
 
 Chrome 已通过配对与真实测速验证。Codex 内置浏览器在本次验收中连接超时，遇到连接问题时可直接使用桌面版。
 
-**版本说明（2026-10-12）**：桌面版 `1.0.0` 已发布；npm 当前发布版为 `1.11.1`，本次 Studio / Codex 功能尚未发布到 npm。下方 npm 命令用于 API CLI；Codex 请使用桌面版或源码入口。
+**版本说明（2026-10-12）**：桌面版 `1.1.0` 已发布，新增 Codex 历史会话分析并修正测速计量；npm 当前发布版为 `1.11.1`，Studio / Codex 功能尚未发布到 npm。下方 npm 命令用于 API CLI；Codex 请使用桌面版或源码入口。升级桌面版后，请完全退出旧进程再启动。
+
+### Codex 历史会话分析
+
+在桌面版或已配对网页中切换到「历史会话分析」，选择近 7 天或自定义日期范围。可按模型、推理强度和服务档位查看统计、轮次明细，并取消分析或导出 JSON / CSV。
+
+分析只读取本机保留的 Codex 日志，不调用模型。正文仅在本机用于分词，不进入网页或导出；历史消息速度是估算，不提供缺少流式数据的 TPS 曲线或峰值。结果仅代表本机保留的日志，详细口径见 [Studio 文档](docs/studio.md#历史会话分析)。
 
 ## 安装
 
@@ -131,7 +138,7 @@ token-speed-tester \
 
 ### 从源码运行 Codex
 
-以下命令使用 Studio 功能分支。固定复现桌面版 1.0.0 时，可将分支名换成 `desktop-v1.0.0`。
+以下命令使用 Studio 功能分支。固定复现桌面版 1.1.0 时，可将分支名换成 `desktop-v1.1.0`。
 
 ```sh
 git clone --branch feat/token-speed-studio https://github.com/Cansiny0320/token-speed-tester.git
@@ -293,7 +300,7 @@ MIT © [Cansiny0320](https://github.com/Cansiny0320)
 ## 相关链接
 
 - [公开网页](https://token-speed-studio.cansiny0320.chatgpt.site)
-- [桌面安装包](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0)
+- [桌面安装包](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.1.0)
 - [Studio 文档](docs/studio.md)
 - [npm 包](https://www.npmjs.com/package/token-speed-tester)
 - [GitHub 仓库](https://github.com/Cansiny0320/token-speed-tester)

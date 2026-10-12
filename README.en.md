@@ -2,7 +2,7 @@
 
 > Measure LLM and Codex time to first token, throughput, and streaming speed with CLI, web, and desktop tools for macOS, Windows, and Linux.
 
-[Chinese README](README.md) · [Open website](https://token-speed-studio.cansiny0320.chatgpt.site) · [Download desktop apps](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0) · [Studio docs (Chinese)](docs/studio.md)
+[Chinese README](README.md) · [Open website](https://token-speed-studio.cansiny0320.chatgpt.site) · [Download desktop apps](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.1.0) · [Studio docs (Chinese)](docs/studio.md)
 
 [![npm version](https://img.shields.io/npm/v/token-speed-tester)](https://www.npmjs.com/package/token-speed-tester)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -20,6 +20,7 @@
 - **Web and desktop:** live text and TPS charts. Run the desktop app independently or pair it with the website.
 - **Measurements:** TTFT, average throughput, per-second peaks, and repeated-run statistics. Studio records initialization time and output/reasoning usage separately.
 - **Codex controls:** model, reasoning effort, repetitions, timeout, and cancellation. Each run uses an isolated temporary session with tools, MCP servers, plugins, and hooks disabled.
+- **Codex history analysis:** read retained local sessions and archives, filter dates, group by model / reasoning effort / service tier, inspect turns, and export JSON / CSV without calling a model.
 - **Local reports:** JSON / CSV / HTML exports. Studio retains the six most recent local reports and imports its own JSON format. Failed or cancelled Studio runs are excluded from summaries.
 - **CLI:** terminal charts, custom endpoints, bilingual output and reports, and existing API workflows.
 
@@ -31,13 +32,13 @@ The website is a static client. Benchmarks run on the visitor's computer through
 
 | Platform | Download |
 | --- | --- |
-| macOS Apple Silicon | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-mac-arm64.dmg) |
-| macOS Intel | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-mac-x64.dmg) |
-| Windows x64 | [exe](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-win-x64.exe) |
-| Linux x64 · AppImage | [AppImage](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-linux-x86_64.AppImage) |
-| Debian / Ubuntu x64 | [deb](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-linux-amd64.deb) |
+| macOS Apple Silicon | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-mac-arm64.dmg) |
+| macOS Intel | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-mac-x64.dmg) |
+| Windows x64 | [exe](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-win-x64.exe) |
+| Linux x64 · AppImage | [AppImage](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-linux-x86_64.AppImage) |
+| Debian / Ubuntu x64 | [deb](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/Token-Speed-Studio-1.1.0-linux-amd64.deb) |
 
-[Full release and ZIP packages](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0) · [SHA256SUMS.txt](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/SHA256SUMS.txt). Initial packages are unsigned and not notarized. A real benchmark was verified on macOS Apple Silicon. Intel Mac, Windows, and Linux builds have not yet been tested on their respective systems.
+[Full release and ZIP packages](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.1.0) · [SHA256SUMS.txt](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.1.0/SHA256SUMS.txt). macOS packages are unsigned and not notarized. History scanning was verified on macOS Apple Silicon; this release has not been tested on physical Windows or Linux systems. See the release notes for verification details.
 
 1. Install and open the desktop app. For Codex, install Codex CLI and run `codex login`; an existing ChatGPT login can be reused. Select the executable manually if automatic detection fails.
 2. Select a provider, model, prompt, and repetition count. API providers require their own API key and endpoint.
@@ -46,7 +47,13 @@ The website is a static client. Benchmarks run on the visitor's computer through
 
 Pairing and a real benchmark have been verified in Chrome. The Codex in-app browser timed out during verification; use the desktop app if browser connection fails.
 
-**Release status (2026-10-12):** desktop `1.0.0` is available. npm currently publishes `1.11.1`; the new Studio / Codex functionality has not been published to npm. The npm commands below are for the API CLI. Use desktop or the source checkout for Codex.
+**Release status (2026-10-12):** desktop `1.1.0` is available with Codex history analysis and measurement fixes. npm currently publishes `1.11.1`; Studio / Codex functionality has not been published to npm. The npm commands below are for the API CLI. Use desktop or the source checkout for Codex. Fully quit the old desktop process before launching the updated app.
+
+### Codex session-history analysis
+
+Open history analysis in the desktop app or paired website, then select the last seven days or a custom date range. Group statistics by model, reasoning effort, or service tier, inspect turn details, cancel analysis, and export JSON / CSV.
+
+Analysis reads retained local Codex logs without calling a model. Message text stays on the local machine and is excluded from the web UI and exports. Historical message speed is an estimate; TPS curves and peaks are unavailable without streaming data. Results cover only retained local logs. See the [Studio guide (Chinese)](docs/studio.md#历史会话分析) for measurement details.
 
 ## Installation
 
@@ -130,7 +137,7 @@ token-speed-tester \
 
 ### Run Codex from source
 
-These commands use the Studio feature branch. Use `desktop-v1.0.0` instead to reproduce the desktop release's source.
+These commands use the Studio feature branch. Use `desktop-v1.1.0` instead to reproduce the desktop release's source.
 
 ```sh
 git clone --branch feat/token-speed-studio https://github.com/Cansiny0320/token-speed-tester.git
@@ -294,7 +301,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Links
 
 - [Website](https://token-speed-studio.cansiny0320.chatgpt.site)
-- [Desktop downloads](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0)
+- [Desktop downloads](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.1.0)
 - [Studio docs](docs/studio.md)
 - [npm Package](https://www.npmjs.com/package/token-speed-tester)
 - [GitHub Repository](https://github.com/Cansiny0320/token-speed-tester)
