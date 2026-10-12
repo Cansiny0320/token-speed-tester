@@ -35,11 +35,14 @@ program
   .version(getCliVersion());
 
 program
-  .option("-k, --api-key <key>", "API Key (required)", "")
-  .option("-p, --provider <provider>", "API provider: anthropic or openai", "openai")
+  .option("-k, --api-key <key>", "API Key (required for API providers)", "")
+  .option("-p, --provider <provider>", "Provider: anthropic, openai, or codex", "openai")
   .option("-u, --url <url>", "Custom API endpoint URL")
   .option("-m, --model <model>", "Model name")
-  .option("--max-tokens <number>", "Maximum output tokens", "1024")
+  .option("--max-tokens <number>", "Maximum output tokens (API providers only)", "1024")
+  .option("--codex-path <path>", "Codex executable path (otherwise auto-detected)")
+  .option("--effort <effort>", "Codex reasoning effort", "low")
+  .option("--timeout <ms>", "Codex round timeout in milliseconds", "120000")
   .option("-r, --runs <number>", "Number of test runs", "3")
   .option("--prompt <text>", "Test prompt")
   .option("--lang <lang>", "Output language: zh or en", "zh")
@@ -64,6 +67,9 @@ async function main() {
       lang: options.lang,
       outputFormat: options.outputFormat as OutputFormat,
       outputPath: options.output,
+      codexPath: options.codexPath,
+      effort: options.effort,
+      timeoutMs: Number(options.timeout),
     });
     messages = getMessages(config.lang);
     const validation = validateConfig(config);
@@ -74,7 +80,7 @@ async function main() {
     console.log(chalk.gray("─".repeat(50)));
     console.log(chalk.gray(`${messages.configLabels.provider}: ${chalk.white(config.provider)}`));
     console.log(chalk.gray(`${messages.configLabels.model}: ${chalk.white(config.model)}`));
-    console.log(chalk.gray(`${messages.configLabels.maxTokens}: ${chalk.white(config.maxTokens)}`));
+    console.log(chalk.gray(`${messages.configLabels.maxTokens}: ${chalk.white(config.provider === "codex" ? "N/A (Codex)" : config.maxTokens)}`));
     console.log(chalk.gray(`${messages.configLabels.runs}: ${chalk.white(config.runCount)}`));
     console.log(
       chalk.gray(

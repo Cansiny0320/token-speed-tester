@@ -1,15 +1,27 @@
 import type { Config } from "./config.js";
 import type { StreamMetrics } from "./metrics.js";
+import type { TokenUsage } from "./studio/types.js";
 import { Buffer } from "node:buffer";
 import { performance } from "node:perf_hooks";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 import { getMessages } from "./i18n.js";
+import { codexStreamTest } from "./studio/cli.js";
 import { createTokenizer } from "./tokenizer.js";
 
 interface StreamEvent {
   text?: string;
   outputTokens?: number;
+  usage?: TokenUsage;
+}
+
+export interface StreamOptions {
+  signal?: AbortSignal;
+  quiet?: boolean;
+  onText?: (text: string, elapsedMs: number) => void;
+  onUsage?: (usage: TokenUsage) => void;
+  timeoutMs?: number;
+  maxRetries?: number;
 }
 
 interface StreamProcessor {
@@ -23,6 +35,7 @@ class AnthropicStreamProcessor implements StreamProcessor {
   constructor(
     private client: Anthropic,
     private config: Config,
+    private options: StreamOptions = {},
   ) {}
 
   async* stream(): AsyncIterable<StreamEvent> {
@@ -31,11 +44,14 @@ class AnthropicStreamProcessor implements StreamProcessor {
       max_tokens: this.config.maxTokens,
       messages: [{ role: "user", content: this.config.prompt }],
       stream: true,
-    });
+    }, { signal: this.options.signal });
 
     for await (const event of stream) {
+      if (event.type === "message_start") {
+        yield { usage: { inputTokens: event.message.usage.input_tokens } };
+      }
       if (event.type === "message_delta") {
-        yield { outputTokens: event.usage.output_tokens };
+        yield { outputTokens: event.usage.output_tokens, usage: { outputTokens: event.usage.output_tokens } };
       }
       if (
         event.type === "content_block_delta"
@@ -54,6 +70,7 @@ class OpenAIStreamProcessor implements StreamProcessor {
   constructor(
     private client: OpenAI,
     private config: Config,
+    private options: StreamOptions = {},
   ) {}
 
   async* stream(): AsyncIterable<StreamEvent> {
@@ -68,13 +85,19 @@ class OpenAIStreamProcessor implements StreamProcessor {
       ...(officialEndpoint ? { stream_options: { include_usage: true } } : {}),
       messages: [{ role: "user", content: this.config.prompt }],
       stream: true,
-    });
+    }, { signal: this.options.signal });
 
     for await (const chunk of stream) {
       if (chunk.usage) {
         yield {
           outputTokens: chunk.usage.completion_tokens
             - (chunk.usage.completion_tokens_details?.reasoning_tokens ?? 0),
+          usage: {
+            inputTokens: chunk.usage.prompt_tokens,
+            cachedInputTokens: chunk.usage.prompt_tokens_details?.cached_tokens,
+            outputTokens: chunk.usage.completion_tokens,
+            reasoningTokens: chunk.usage.completion_tokens_details?.reasoning_tokens,
+          },
         };
       }
       const delta = chunk.choices[0]?.delta;
@@ -88,6 +111,7 @@ class OpenAIStreamProcessor implements StreamProcessor {
 async function runStreamTest(
   processor: StreamProcessor,
   encoding: ReturnType<typeof createTokenizer>,
+  options: StreamOptions = {},
 ): Promise<StreamMetrics> {
   const chunks: { text: string; time: number; byteEnd: number }[] = [];
   let outputTokens: number | undefined;
@@ -97,13 +121,15 @@ async function runStreamTest(
   try {
     for await (const event of processor.stream()) {
       const elapsed = performance.now() - startTime;
+      if (event.usage) options.onUsage?.(event.usage);
       if (event.outputTokens !== undefined) {
         outputTokens = event.outputTokens;
       }
       if (event.text) {
         byteLength += Buffer.byteLength(event.text);
         chunks.push({ text: event.text, time: elapsed, byteEnd: byteLength });
-        process.stdout.write(event.text);
+        options.onText?.(event.text, elapsed);
+        if (!options.quiet) process.stdout.write(event.text);
       }
     }
     const totalTime = performance.now() - startTime;
@@ -136,7 +162,7 @@ async function runStreamTest(
   }
   finally {
     encoding.free();
-    if (chunks.length > 0) {
+    if (chunks.length > 0 && !options.quiet) {
       process.stdout.write("\n");
     }
   }
@@ -145,38 +171,43 @@ async function runStreamTest(
 /**
  * 执行 Anthropic API 流式测试
  */
-export async function anthropicStreamTest(config: Config): Promise<StreamMetrics> {
+export async function anthropicStreamTest(config: Config, options: StreamOptions = {}): Promise<StreamMetrics> {
   const client = new Anthropic({
     apiKey: config.apiKey,
     baseURL: config.baseURL,
+    ...(options.timeoutMs === undefined ? {} : { timeout: options.timeoutMs }),
+    ...(options.maxRetries === undefined ? {} : { maxRetries: options.maxRetries }),
   });
 
-  const processor = new AnthropicStreamProcessor(client, config);
-  return runStreamTest(processor, createTokenizer(config.model));
+  const processor = new AnthropicStreamProcessor(client, config, options);
+  return runStreamTest(processor, createTokenizer(config.model), options);
 }
 
 /**
  * 执行 OpenAI API 流式测试
  */
-export async function openaiStreamTest(config: Config): Promise<StreamMetrics> {
+export async function openaiStreamTest(config: Config, options: StreamOptions = {}): Promise<StreamMetrics> {
   const client = new OpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseURL,
+    ...(options.timeoutMs === undefined ? {} : { timeout: options.timeoutMs }),
+    ...(options.maxRetries === undefined ? {} : { maxRetries: options.maxRetries }),
   });
 
-  const processor = new OpenAIStreamProcessor(client, config);
-  return runStreamTest(processor, createTokenizer(config.model));
+  const processor = new OpenAIStreamProcessor(client, config, options);
+  return runStreamTest(processor, createTokenizer(config.model), options);
 }
 
 /**
  * 根据配置执行流式测试
  */
-export async function streamTest(config: Config): Promise<StreamMetrics> {
+export async function streamTest(config: Config, options: StreamOptions = {}): Promise<StreamMetrics> {
+  if (config.provider === "codex") return codexStreamTest(config, options);
   if (config.provider === "anthropic") {
-    return anthropicStreamTest(config);
+    return anthropicStreamTest(config, options);
   }
   else {
-    return openaiStreamTest(config);
+    return openaiStreamTest(config, options);
   }
 }
 

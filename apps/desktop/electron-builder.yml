@@ -1,0 +1,38 @@
+appId: com.cansiny.token-speed-studio
+productName: Token Speed Studio
+icon: build/icon.png
+directories:
+  output: release
+files:
+  - dist/**
+  - package.json
+asar: true
+asarUnpack:
+  - node_modules/tiktoken/**
+npmRebuild: false
+artifactName: Token-Speed-Studio-${version}-${os}-${arch}.${ext}
+mac:
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  category: public.app-category.developer-tools
+  identity: null
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  signExecutable: false
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+linux:
+  syncDesktopName: true
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+  category: Development
+  maintainer: Cansiny0320

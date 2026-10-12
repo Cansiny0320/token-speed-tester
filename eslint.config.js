@@ -7,7 +7,8 @@ export default antfu(
     pnpm: true,
     ignores: [
       ".github/**",
-      "dist/**",
+      "**/dist/**",
+      "**/release/**",
       "node_modules/**",
       "coverage/**",
       "scripts/**",
@@ -42,5 +43,9 @@ export default antfu(
       // Tests: don't enforce title casing
       "test/prefer-lowercase-title": "off",
     },
+  },
+  {
+    files: ["apps/**/package.json"],
+    rules: { "pnpm/json-prefer-workspace-settings": "off" },
   },
 );

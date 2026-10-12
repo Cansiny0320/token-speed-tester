@@ -139,7 +139,7 @@ describe("config", () => {
           apiKey: VALID_API_KEY,
           provider: "invalid" as Provider,
         }),
-      ).toThrow("Invalid provider: invalid. Must be 'anthropic' or 'openai'.");
+      ).toThrow("Invalid provider: invalid. Must be 'anthropic', 'openai', or 'codex'.");
     });
 
     it("should throw error for invalid lang", () => {

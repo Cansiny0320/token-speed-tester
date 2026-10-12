@@ -10,7 +10,7 @@ export interface ExportData {
   config: {
     provider: string;
     model: string;
-    maxTokens: number;
+    maxTokens: number | null;
     runCount: number;
     prompt: string;
   };
@@ -59,7 +59,7 @@ export function generateJSONExport(
     config: {
       provider: config.provider,
       model: config.model,
-      maxTokens: config.maxTokens,
+      maxTokens: config.provider === "codex" ? null : config.maxTokens,
       runCount: config.runCount,
       prompt: config.prompt,
     },

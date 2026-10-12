@@ -37,3 +37,4 @@ coverage/
 # HTML report output
 *.html
 !src/**/*.html
+!apps/site/src/index.html

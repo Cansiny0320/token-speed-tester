@@ -1,7 +1,8 @@
 import type { Lang } from "./i18n.js";
+import type { Effort } from "./studio/types.js";
 import { getMessages, resolveLang } from "./i18n.js";
 
-export type Provider = "anthropic" | "openai";
+export type Provider = "anthropic" | "openai" | "codex";
 export type OutputFormat = "terminal" | "json" | "csv" | "html";
 
 export interface Config {
@@ -15,6 +16,9 @@ export interface Config {
   lang: Lang;
   outputFormat: OutputFormat;
   outputPath: string;
+  codexPath?: string;
+  effort?: Effort;
+  timeoutMs?: number;
 }
 
 export interface ParsedArgs {
@@ -28,9 +32,13 @@ export interface ParsedArgs {
   lang?: string;
   outputFormat?: OutputFormat;
   outputPath?: string;
+  codexPath?: string;
+  effort?: string;
+  timeoutMs?: number;
 }
 
 const DEFAULT_MODELS: Record<Provider, string> = {
+  codex: "auto",
   anthropic: "claude-opus-4-5-20251101",
   openai: "gpt-5.2",
 };
@@ -58,14 +66,18 @@ export function parseConfig(args: ParsedArgs): Config {
   const finalPrompt = prompt ?? messages.defaultPrompt;
 
   // 验证必填参数
-  if (!apiKey || apiKey.trim() === "") {
+  if (provider !== "codex" && (!apiKey || apiKey.trim() === "")) {
     throw new Error("API Key is required. Use --api-key or -k to provide it.");
   }
 
   // 验证 provider
-  if (provider !== "anthropic" && provider !== "openai") {
-    throw new Error(`Invalid provider: ${provider}. Must be 'anthropic' or 'openai'.`);
+  if (provider !== "anthropic" && provider !== "openai" && provider !== "codex") {
+    throw new Error(`Invalid provider: ${provider}. Must be 'anthropic', 'openai', or 'codex'.`);
   }
+
+  if (args.timeoutMs !== undefined && (!Number.isInteger(args.timeoutMs) || args.timeoutMs < 5000 || args.timeoutMs > 600000)) throw new Error("Invalid timeout: use 5000–600000 milliseconds.");
+  const efforts = ["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"];
+  if (args.effort !== undefined && !efforts.includes(args.effort)) throw new Error("Invalid effort.");
 
   // 验证数值参数
   if (!Number.isFinite(maxTokens) || !Number.isInteger(maxTokens) || maxTokens <= 0) {
@@ -112,6 +124,7 @@ export function parseConfig(args: ParsedArgs): Config {
     lang,
     outputFormat,
     outputPath: finalOutputPath,
+    ...(provider === "codex" ? { codexPath: args.codexPath, effort: (args.effort ?? "low") as Effort, timeoutMs: args.timeoutMs ?? 120000 } : {}),
   };
 }
 
@@ -126,11 +139,11 @@ export function getDefaultModel(provider: Provider): string {
  * 验证配置有效性
  */
 export function validateConfig(config: Config): { valid: boolean; error?: string } {
-  if (!config.apiKey) {
+  if (config.provider !== "codex" && !config.apiKey) {
     return { valid: false, error: "API Key is required" };
   }
 
-  if (config.provider !== "anthropic" && config.provider !== "openai") {
+  if (config.provider !== "anthropic" && config.provider !== "openai" && config.provider !== "codex") {
     return { valid: false, error: `Invalid provider: ${config.provider}` };
   }
 

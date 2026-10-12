@@ -471,7 +471,7 @@ export function generateHTMLReport(options: HTMLReportOptions): string {
         </div>
         <div class="config-item">
           <span class="config-label">${messages.configLabels.maxTokens}</span>
-          <span class="config-value">${config.maxTokens}</span>
+          <span class="config-value">${config.provider === "codex" ? "N/A (Codex)" : config.maxTokens}</span>
         </div>
         <div class="config-item">
           <span class="config-label">${messages.configLabels.runs}</span>
