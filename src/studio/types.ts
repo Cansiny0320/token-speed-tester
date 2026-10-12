@@ -29,9 +29,12 @@ export interface RunMeasurement {
   tokenSource: "provider" | "estimated";
   averageTps: number;
   generationTps: number | null;
-  peakTps: number;
+  peakTps: number | null;
   tps: number[];
   usage?: TokenUsage;
+  /** Optional on reports written before measurement provenance was recorded. */
+  tokenizer?: { encoding: string; source: "model" | "fallback" };
+  timingSource?: "stream" | "unavailable";
 }
 export interface BenchmarkRun extends RunMeasurement {
   index: number;
@@ -39,6 +42,7 @@ export interface BenchmarkRun extends RunMeasurement {
   initMs: number;
   model?: string;
   runtimeVersion?: string;
+  serviceTier?: string | null;
   error?: string;
 }
 export interface BenchmarkSnapshot {
@@ -85,6 +89,88 @@ export interface DesktopAPI {
   pairing: () => Promise<PairingInfo>;
   selectCodex: () => Promise<boolean>;
   openSite: () => Promise<void>;
+  historyStart: (config: HistoryConfig) => Promise<HistoryState>;
+  historyState: () => Promise<HistoryState>;
+  historyCancel: () => Promise<void>;
+}
+
+export interface HistoryConfig {
+  /** ISO instants: inclusive start, exclusive end. The UI supplies local-day boundaries. */
+  from: string;
+  to: string;
+}
+export interface HistoryMessageMetric {
+  phase: string;
+  estimatedTokens: number;
+  durationMs: number | null;
+  estimatedTps: number | null;
+  encoding: string;
+  encodingSource: "model" | "fallback";
+}
+export interface HistoryTurn {
+  sessionId: string;
+  turnId: string;
+  model: string;
+  effort: string;
+  serviceTier: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  status: "completed" | "interrupted" | "unfinished";
+  partial: boolean;
+  durationMs: number | null;
+  modelTtftMs: number | null;
+  requests: number;
+  usage: TokenUsage;
+  usageSource: "request" | "legacy" | "unavailable";
+  messages: HistoryMessageMetric[];
+}
+export interface HistoryDistribution {
+  count: number;
+  p50: number | null;
+  p95: number | null;
+}
+export interface HistoryGroup {
+  model: string;
+  effort: string;
+  serviceTier: string;
+  turns: number;
+  completed: number;
+  usageTurns: number;
+  requests: number;
+  usage: TokenUsage;
+  cacheRatio: number | null;
+  durationMs: HistoryDistribution;
+  modelTtftMs: HistoryDistribution;
+  estimatedMessageTps: HistoryDistribution;
+}
+export interface HistoryCoverage {
+  filesRead: number;
+  filesSkippedByTime: number;
+  unreadableFiles: number;
+  malformedLines: number;
+  incompleteLines: number;
+  oversizedLines: number;
+  duplicateRecords: number;
+  legacyCounterResets: number;
+  skippedUsageEvents: number;
+  untimedMessages: number;
+  missingUsageTurns: number;
+}
+export interface HistoryReport {
+  schemaVersion: 1;
+  generatedAt: string;
+  range: HistoryConfig;
+  coverage: HistoryCoverage;
+  summary: HistoryGroup;
+  groups: HistoryGroup[];
+  turns: HistoryTurn[];
+}
+export interface HistoryState {
+  id: string;
+  phase: "idle" | "scanning" | "completed" | "cancelled" | "failed";
+  progress: { filesTotal: number; filesRead: number; bytesTotal: number; bytesRead: number };
+  report: HistoryReport | null;
+  error?: string;
 }
 export const DEFAULT_BENCHMARK_CONFIG: BenchmarkConfig = {
   provider: "codex",
@@ -153,7 +239,7 @@ export function emptyMeasurement(): RunMeasurement {
     tokenSource: "estimated",
     averageTps: 0,
     generationTps: null,
-    peakTps: 0,
+    peakTps: null,
     tps: [],
   };
 }

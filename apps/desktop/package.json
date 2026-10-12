@@ -1,6 +1,6 @@
 {
   "name": "token-speed-studio",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Local Codex and LLM streaming speed benchmark",
   "author": "Cansiny0320",
   "license": "MIT",

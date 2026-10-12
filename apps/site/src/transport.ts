@@ -1,4 +1,4 @@
-import type { BenchmarkConfig, BenchmarkSnapshot, DesktopAPI, StudioInfo } from "./protocol";
+import type { BenchmarkConfig, BenchmarkSnapshot, DesktopAPI, HistoryConfig, HistoryState, StudioInfo } from "./protocol";
 
 declare global { interface Window { tokenSpeedDesktop?: DesktopAPI } }
 const SESSION_KEY = "token-speed-connection-v1";
@@ -67,3 +67,6 @@ export const getInfo = () => desktop ? desktop.info() : request<StudioInfo>("/in
 export const getState = () => desktop ? desktop.state() : request<BenchmarkSnapshot>("/state");
 export const startRun = (config: BenchmarkConfig) => desktop ? desktop.run(config) : request<BenchmarkSnapshot>("/run", "POST", config);
 export const cancelRun = () => desktop ? desktop.cancel() : request<void>("/cancel", "POST", {});
+export const getHistoryState = () => desktop ? desktop.historyState() : request<HistoryState>("/history/state");
+export const startHistory = (config: HistoryConfig) => desktop ? desktop.historyStart(config) : request<HistoryState>("/history/start", "POST", config);
+export const cancelHistory = () => desktop ? desktop.historyCancel() : request<void>("/history/cancel", "POST", {});

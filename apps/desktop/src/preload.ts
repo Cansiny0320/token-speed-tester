@@ -9,5 +9,8 @@ const api: DesktopAPI = {
   pairing: () => ipcRenderer.invoke("studio:pairing"),
   selectCodex: () => ipcRenderer.invoke("studio:select-codex"),
   openSite: () => ipcRenderer.invoke("studio:open-site"),
+  historyStart: config => ipcRenderer.invoke("studio:history-start", config),
+  historyState: () => ipcRenderer.invoke("studio:history-state"),
+  historyCancel: () => ipcRenderer.invoke("studio:history-cancel"),
 };
 contextBridge.exposeInMainWorld("tokenSpeedDesktop", api);

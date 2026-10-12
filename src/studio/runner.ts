@@ -1,3 +1,4 @@
+import type { CodexThread } from "./codex.js";
 import type { BenchmarkConfig, BenchmarkRun, BenchmarkSnapshot, StudioInfo, TokenUsage } from "./types.js";
 import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
@@ -76,21 +77,22 @@ export class BenchmarkRunner {
       };
       round.signal.addEventListener("abort", stopSession, { once: true });
       try {
-        meter = new Measurement(config.model);
-        let thread: { threadId: string; model: string } | undefined;
+        let thread: CodexThread | undefined;
         if (config.provider === "codex") {
           session = await CodexSession.open(this.codexPath, round.signal);
           thread = await session.prepare(config);
           run.runtimeVersion += ` / ${session.version ?? "Codex version unavailable"}`;
           run.model = thread.model;
+          run.serviceTier = thread.serviceTier;
         }
+        meter = new Measurement(thread?.model ?? config.model);
         round.signal.throwIfAborted();
         run.initMs = performance.now() - initStart;
         run.status = "running";
         this.snapshot.phase = "running";
         this.activeStart = performance.now();
-        const onText = (text: string, at: number) => {
-          meter?.add(text, at);
+        const onText = (text: string, at: number, streamed = true) => {
+          meter?.add(text, at, streamed);
           if (at - lastPreview >= 200 || lastPreview === 0) {
             Object.assign(run, meter?.preview(at));
             lastPreview = at;

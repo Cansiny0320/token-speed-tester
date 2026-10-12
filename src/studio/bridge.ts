@@ -4,6 +4,7 @@ import type { PairingInfo } from "./types.js";
 import { Buffer } from "node:buffer";
 import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { createServer } from "node:http";
+import { HistoryAnalyzer } from "./history.js";
 import { isRecord } from "./types.js";
 
 export const DEFAULT_BRIDGE_PORT = 46321;
@@ -26,7 +27,7 @@ async function readJson(request: IncomingMessage): Promise<unknown> {
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
-export async function startBridge(runner: BenchmarkRunner, options: BridgeOptions) {
+export async function startBridge(runner: BenchmarkRunner, options: BridgeOptions, history = new HistoryAnalyzer()) {
   const allowed = new Set(options.allowedOrigins.map(value => new URL(value).origin));
   const sessions = new Map<string, { origin: string; expiresAt: number }>();
   let code = "";
@@ -125,7 +126,22 @@ export async function startBridge(runner: BenchmarkRunner, options: BridgeOption
         send(response, 200, await infoPromise);
       }
       else if (route === "/run" && request.method === "POST") {
-        send(response, 200, runner.start(await readJson(request)));
+        const input = await readJson(request);
+        if (history.state().phase === "scanning") throw new Error("请先完成或取消历史扫描，避免影响测速。");
+        send(response, 200, runner.start(input));
+      }
+      else if (route === "/history/state" && request.method === "GET") {
+        send(response, 200, history.state());
+      }
+      else if (route === "/history/start" && request.method === "POST") {
+        const input = await readJson(request);
+        if (["preparing", "running"].includes(runner.state().phase)) throw new Error("请先完成或停止主动测速，再分析历史。");
+        send(response, 200, history.start(input));
+      }
+      else if (route === "/history/cancel" && request.method === "POST") {
+        await readJson(request);
+        history.cancel();
+        send(response, 200, { ok: true });
       }
       else if (route === "/cancel" && request.method === "POST") {
         await readJson(request);
@@ -161,7 +177,9 @@ export async function startBridge(runner: BenchmarkRunner, options: BridgeOption
     async close() {
       sessions.clear();
       runner.cancel();
+      history.cancel();
       await runner.settled();
+      await history.settled();
       server.closeAllConnections();
       await new Promise<void>(resolve => server.close(() => resolve()));
     },

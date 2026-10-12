@@ -3,6 +3,35 @@ import { Measurement } from "../src/studio/measurement.js";
 import { parseBenchmarkConfig, publicConfig } from "../src/studio/types.js";
 
 describe("studio measurement", () => {
+  it("excludes the complete first batch from the observed output interval", () => {
+    const meter = new Measurement("gpt-4");
+    meter.add(" hello".repeat(99), 1000);
+    meter.add(" hello", 1000);
+    meter.add(" world", 2000);
+    const result = meter.finish(2100);
+    expect(result.estimatedTokens).toBe(101);
+    expect(result.generationTps).toBe(1);
+  });
+
+  it("preserves completed text without inventing stream timing", () => {
+    const meter = new Measurement("gpt-4");
+    meter.add("hello world", 900, false);
+    const result = meter.finish(1000, { outputTokens: 2 });
+    expect(result.text).toBe("hello world");
+    expect(result.averageTps).toBe(2);
+    expect(result.ttftMs).toBeNull();
+    expect(result.generationTps).toBeNull();
+    expect(result.peakTps).toBeNull();
+    expect(result.tps).toEqual([]);
+    expect(result.timingSource).toBe("unavailable");
+  });
+
+  it("labels unknown tokenizers without treating the fallback as a model mapping", () => {
+    const meter = new Measurement("unknown-model");
+    expect(meter.finish(0).tokenizer).toEqual({ encoding: "cl100k_base", source: "fallback" });
+    expect(new Measurement("gpt-4o").finish(0).tokenizer).toEqual({ encoding: "o200k_base", source: "model" });
+  });
+
   it("maps whole-text tokens independently of stream splitting", () => {
     const whole = new Measurement("gpt-4");
 

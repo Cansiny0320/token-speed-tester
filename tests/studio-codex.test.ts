@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { parseConfig } from "../src/config.js";
 import { codexStreamTest } from "../src/studio/cli.js";
 import { CodexSession } from "../src/studio/codex.js";
+import { BenchmarkRunner } from "../src/studio/runner.js";
 import { DEFAULT_BENCHMARK_CONFIG } from "../src/studio/types.js";
 
 const directories: string[] = [];
@@ -31,13 +32,16 @@ lines.on('line', line => {
  if (q.method === 'config/read') result = { config: { model: 'configured-model', mcp_servers: { local: { command: 'never-start' } } } };
  if (q.method === 'account/read') result = { account: { type: 'chatgpt', planType: 'plus' } };
  if (q.method === 'model/list') result = { data: [{ model: 'catalogue-model', isDefault: true, supportedReasoningEfforts: [] }] };
- if (q.method === 'thread/start') result = { thread: { id: 't1' }, model: 'configured-model' };
+ if (q.method === 'thread/start') result = { thread: { id: 't1' }, model: ${JSON.stringify(mode === "resolved" ? "gpt-4o" : "configured-model")}, serviceTier: 'priority' };
  if (q.method === 'turn/start') {
    if (${JSON.stringify(mode)} === 'hang') return;
    if (${JSON.stringify(mode)} === 'tool') notify('item/started', { item: { type: 'commandExecution' } });
    else {
-     notify('item/agentMessage/delta', { delta: 'hel' });
-     notify('item/agentMessage/delta', { delta: 'lo' });
+     if (${JSON.stringify(mode)} === 'completion-only') notify('item/completed', { item: { type: 'agentMessage', text: 'hello' } });
+     else {
+       notify('item/agentMessage/delta', { delta: 'hel' });
+       notify('item/agentMessage/delta', { delta: 'lo' });
+     }
      notify('thread/tokenUsage/updated', { tokenUsage: { last: { inputTokens: 10, outputTokens: 4, reasoningOutputTokens: 3 } } });
      notify('turn/completed', { turn: { status: 'completed' } });
    }
@@ -50,6 +54,30 @@ lines.on('line', line => {
 }
 
 describe("isolated Codex transport", () => {
+  it("uses the resolved model tokenizer and records the returned service tier", async () => {
+    const { script } = await fixture("resolved");
+    const runner = new BenchmarkRunner();
+    runner.codexPath = script;
+    runner.start({ ...DEFAULT_BENCHMARK_CONFIG, runs: 1 });
+    const result = await runner.settled();
+    expect(result.runs[0]).toMatchObject({
+      status: "completed",
+      model: "gpt-4o",
+      serviceTier: "priority",
+      tokenizer: { encoding: "o200k_base", source: "model" },
+    });
+  });
+
+  it("keeps non-streamed Studio output untimed and rejects it in legacy CLI reports", async () => {
+    const { script } = await fixture("completion-only");
+    const runner = new BenchmarkRunner();
+    runner.codexPath = script;
+    runner.start({ ...DEFAULT_BENCHMARK_CONFIG, runs: 1 });
+    const result = await runner.settled();
+    expect(result.runs[0]).toMatchObject({ status: "completed", text: "hello", ttftMs: null, tps: [], peakTps: null });
+    await expect(codexStreamTest(parseConfig({ provider: "codex", apiKey: "", codexPath: script }), { quiet: true })).rejects.toThrow("流式计时");
+  });
+
   it("handles events before the start reply and disables inherited MCPs", async () => {
     const { script, trace } = await fixture();
     const session = await CodexSession.open(script);

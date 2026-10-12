@@ -5,11 +5,13 @@ import { pathToFileURL } from "node:url";
 import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from "electron";
 import { startBridge } from "../../../src/studio/bridge.js";
 import { resolveCodex } from "../../../src/studio/codex.js";
+import { HistoryAnalyzer } from "../../../src/studio/history.js";
 import { BenchmarkRunner } from "../../../src/studio/runner.js";
 import { isRecord } from "../../../src/studio/types.js";
 import siteInfo from "../../site/src/site-info.json";
 
 const runner = new BenchmarkRunner();
+const history = new HistoryAnalyzer();
 const pagePath = path.join(__dirname, "web", "index.html");
 let window: BrowserWindow | undefined;
 let bridge: Awaited<ReturnType<typeof startBridge>> | undefined;
@@ -74,7 +76,7 @@ async function initialize() {
         type: "question",
         title: "允许网页连接本机？",
         message: `允许 ${origin} 使用本机测速？`,
-        detail: "该网页将可以启动、查看和取消 Codex/API 测速。Codex 登录凭证留在本机；测速会使用当前账号额度。",
+        detail: "该网页将可以启动、查看和取消测速，以及读取本机历史会话统计（时间、模型、用量和会话 ID）。历史正文与登录凭证留在本机；主动测速会使用当前账号额度。",
         buttons: ["拒绝", "允许连接"],
         defaultId: 0,
         cancelId: 0,
@@ -84,15 +86,24 @@ async function initialize() {
     },
   };
   try {
-    bridge = await startBridge(runner, options);
+    bridge = await startBridge(runner, options, history);
   }
   catch (error) {
-    if (isRecord(error) && error.code === "EADDRINUSE") bridge = await startBridge(runner, { ...options, port: 0 });
+    if (isRecord(error) && error.code === "EADDRINUSE") bridge = await startBridge(runner, { ...options, port: 0 }, history);
     else throw error;
   }
   handle("info", () => runner.info());
   handle("state", () => runner.state());
-  handle("run", value => runner.start(value));
+  handle("run", (value) => {
+    if (history.state().phase === "scanning") throw new Error("请先完成或取消历史扫描，避免影响测速。");
+    return runner.start(value);
+  });
+  handle("history-start", (value) => {
+    if (["preparing", "running"].includes(runner.state().phase)) throw new Error("请先完成或停止主动测速，再分析历史。");
+    return history.start(value);
+  });
+  handle("history-state", () => history.state());
+  handle("history-cancel", () => history.cancel());
   handle("cancel", () => runner.cancel());
   handle("pairing", () => bridge!.pairing());
   handle("open-site", () => external(siteInfo.siteUrl));

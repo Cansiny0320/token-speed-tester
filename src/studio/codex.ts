@@ -13,6 +13,11 @@ export interface CodexStreamResult {
   usage?: TokenUsage;
   model: string;
 }
+export interface CodexThread {
+  threadId: string;
+  model: string;
+  serviceTier: string | null;
+}
 const disabledFeatures = [
   "shell_tool",
   "unified_exec",
@@ -200,7 +205,7 @@ export class CodexSession {
     return { available: true, authenticated: true, models, configuredModel: this.configuredModel, version: this.version, plan: typeof account.planType === "string" ? account.planType : undefined };
   }
 
-  async prepare(config: BenchmarkConfig): Promise<{ threadId: string; model: string }> {
+  async prepare(config: BenchmarkConfig): Promise<CodexThread> {
     const auth = record(await this.rpc.request("account/read", { refreshToken: false }));
     if (!isRecord(auth.account) || auth.account.type !== "chatgpt") throw new Error("请先使用 ChatGPT 订阅账号运行 codex login。");
     const response = record(await this.rpc.request("thread/start", {
@@ -215,10 +220,10 @@ export class CodexSession {
     }));
     const thread = record(response.thread);
     if (typeof thread.id !== "string") throw new Error("Codex 未返回会话 ID。");
-    return { threadId: thread.id, model: typeof response.model === "string" ? response.model : config.model };
+    return { threadId: thread.id, model: typeof response.model === "string" ? response.model : config.model, serviceTier: typeof response.serviceTier === "string" ? response.serviceTier : null };
   }
 
-  async run(thread: { threadId: string; model: string }, config: BenchmarkConfig, onText: (text: string, elapsedMs: number) => void, signal: AbortSignal): Promise<CodexStreamResult> {
+  async run(thread: CodexThread, config: BenchmarkConfig, onText: (text: string, elapsedMs: number, streamed?: boolean) => void, signal: AbortSignal): Promise<CodexStreamResult> {
     signal.throwIfAborted();
     let usage: TokenUsage | undefined;
     let turnId: string | undefined;
@@ -255,7 +260,7 @@ export class CodexSession {
       }
       else if (method === "item/completed" && isRecord(params.item) && params.item.type === "agentMessage" && !receivedText && typeof params.item.text === "string") {
         receivedText = true;
-        onText(params.item.text, performance.now() - start);
+        onText(params.item.text, performance.now() - start, false);
       }
       else if (method === "turn/completed" && isRecord(params.turn)) {
         if (params.turn.status === "completed") {

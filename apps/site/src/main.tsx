@@ -3,8 +3,9 @@ import type { BenchmarkConfig, BenchmarkRun, BenchmarkSnapshot, Effort, PairingI
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import downloads from "./downloads.json";
+import { HistoryView } from "./history-view";
 import { DEFAULT_BENCHMARK_CONFIG } from "./protocol";
-import { demoReport, downloadReport, formatMs, formatNumber, parseReport, statusText, summary } from "./reports";
+import { demoReport, downloadReport, formatMs, formatNumber, measurementNote, parseReport, statusText, summary } from "./reports";
 import siteInfo from "./site-info.json";
 import { cancelRun, desktop, disconnect, getInfo, getState, hasConnection, pair, startRun } from "./transport";
 import "./style.css";
@@ -94,7 +95,7 @@ function Curve({ run }: { run?: BenchmarkRun }) {
           </text>
         ))}
       </svg>
-      {!values.length && <div className="chart-empty">输出到达后，速度将在这里展开。</div>}
+      {!values.length && <div className="chart-empty">{run?.timingSource === "unavailable" && run.text ? "只有完整文本，无法还原流式曲线。" : "输出到达后，速度将在这里展开。"}</div>}
     </div>
   );
 }
@@ -114,6 +115,8 @@ function App() {
   const [pending, setPending] = useState(false);
   const [checking, setChecking] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [mode, setMode] = useState<"benchmark" | "history">("benchmark");
+  const [historyScanning, setHistoryScanning] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
   const outputRef = useRef<HTMLPreElement>(null);
   const lastSaved = useRef("");
@@ -251,7 +254,7 @@ function App() {
             Token Speed
             <b>Studio</b>
           </span>
-          <span className="version">1.0</span>
+          <span className="version">{downloads.version}</span>
         </a>
         <nav aria-label="主要操作">
           <button
@@ -259,6 +262,7 @@ function App() {
             onClick={() => {
               setSavedView(demoReport());
               setSelectedRun(undefined);
+              setMode("benchmark");
             }}
           >
             查看示例
@@ -289,20 +293,30 @@ function App() {
             <button onClick={() => setNotice("")} aria-label="关闭提示">×</button>
           </div>
         )}
-        {demo && (
+        <nav className="analysis-tabs" aria-label="分析方式">
+          <button aria-current={mode === "benchmark" ? "page" : undefined} onClick={() => setMode("benchmark")}>主动测速</button>
+          <button aria-current={mode === "history" ? "page" : undefined} onClick={() => setMode("history")}>
+            历史会话分析
+            {historyScanning ? " · 扫描中" : ""}
+          </button>
+        </nav>
+        <div hidden={mode !== "history"}>
+          <HistoryView connected={connected} benchmarkActive={active} onScanningChange={setHistoryScanning} connect={() => void showConnection()} />
+        </div>
+        {mode === "benchmark" && demo && (
           <div className="demo-notice">
             演示报告 · 以下数据为样例，未调用任何模型。
             <button onClick={() => setSavedView(undefined)}>返回当前测速</button>
           </div>
         )}
-        {savedView && !demo && (
+        {mode === "benchmark" && savedView && !demo && (
           <div className="demo-notice">
             正在查看本地报告 ·
             {savedView.startedAt && new Date(savedView.startedAt).toLocaleString()}
             <button onClick={() => setSavedView(undefined)}>返回当前测速</button>
           </div>
         )}
-        <div className="workspace">
+        <div className="workspace" hidden={mode !== "benchmark"}>
           <aside className="config-panel panel">
             <div className="panel-heading">
               <h2>测试配置</h2>
@@ -386,9 +400,9 @@ function App() {
                 </select>
               </div>
             </fieldset>
-            {active ? <button className="stop-button" onClick={() => void cancelRun().catch(error => setNotice(message(error)))}>■ 停止测速</button> : <button className="primary-button" disabled={pending || !connected || !codexReady} onClick={() => void begin()}>{pending ? "正在启动…" : "▶  开始测速"}</button>}
+            {active ? <button className="stop-button" onClick={() => void cancelRun().catch(error => setNotice(message(error)))}>■ 停止测速</button> : <button className="primary-button" disabled={pending || !connected || !codexReady || historyScanning} onClick={() => void begin()}>{historyScanning ? "请先完成或取消历史扫描" : pending ? "正在启动…" : "▶  开始测速"}</button>}
             {!connected && <button className="connect-hint" onClick={() => void showConnection()}>连接本机软件后开始 →</button>}
-            <p className="config-footnote">每轮独立会话，顺序执行。Codex 测试不调用工具；相同参数更便于比较。</p>
+            <p className="config-footnote">每轮独立进程与会话，顺序执行。比较时需保持模型、推理强度与服务档位一致，并关注缓存和输出长度。默认 3 轮用于快速观察，小样本分位数不代表稳定排名。</p>
             {connected && (
               <div className="setup-actions">
                 <button onClick={() => void refreshInfo()} disabled={checking}>{checking ? "检查中…" : "刷新 Codex 状态"}</button>
@@ -408,7 +422,7 @@ function App() {
               <span className="protocol-label">{view.config ? `${view.config.provider.toUpperCase()} · ${run?.model ?? view.config.model}` : "STREAM BENCHMARK"}</span>
             </div>
             <div className="metric-grid">
-              {[{ label: "首字延迟", value: formatMs(run?.ttftMs), hint: "请求发出 → 首段可见文本" }, { label: "平均输出速度", value: run ? formatNumber(run.averageTps) : "—", unit: "tok/s", hint: "含首字等待的平均速度" }, { label: "输出 Token", value: run ? formatNumber(run.outputTokens, 0) : "—", hint: run?.tokenSource === "provider" ? "服务端用量 · 不含推理" : "可见文本 · 本地估算" }, { label: "请求总耗时", value: formatMs(run?.elapsedMs), hint: run ? `初始化 ${formatMs(run.initMs)} · 单独计时` : "初始化与请求分别计时" }].map(item => (
+              {[{ label: "首字延迟", value: formatMs(run?.ttftMs), hint: run?.timingSource === "unavailable" ? "缺少可见文本流式计时" : "请求发出 → 首段可见文本" }, { label: "平均输出速度", value: run ? formatNumber(run.averageTps) : "—", unit: "tok/s", hint: `${run?.tokenSource === "provider" ? "服务端用量" : "本地估算"} · 含首字等待` }, { label: "输出 Token", value: run ? formatNumber(run.outputTokens, 0) : "—", hint: run?.tokenSource === "provider" ? "服务端用量 · 扣除已报告推理" : "可见文本 · 本地估算" }, { label: "请求总耗时", value: formatMs(run?.elapsedMs), hint: run ? `初始化 ${formatMs(run.initMs)} · 单独计时` : "初始化与请求分别计时" }].map(item => (
                 <div className="metric" key={item.label}>
                   <p>{item.label}</p>
                   <strong>
@@ -433,7 +447,7 @@ function App() {
               <Curve run={run} />
               <div className="chart-footer">
                 <span>
-                  纯输出阶段
+                  首批后速度（估算）
                   <b>
                     {formatNumber(run?.generationTps)}
                     {" "}
@@ -450,6 +464,7 @@ function App() {
                 </span>
                 <span>分块到达时间，不代表逐 Token 生成时间</span>
               </div>
+              <p className="measurement-note">{measurementNote(run)}</p>
             </section>
             <section className="panel output-panel">
               <div className="panel-heading">
@@ -548,12 +563,12 @@ function App() {
             </section>
           </section>
         </div>
-        <section className="history-section">
+        <section className="history-section" hidden={mode !== "benchmark"}>
           <div className="panel-heading">
             <button className="history-toggle" onClick={() => setShowHistory(!showHistory)}>
               {showHistory ? "▾" : "▸"}
               {" "}
-              本地历史
+              测速报告历史
               {" "}
               <span>{history.length}</span>
             </button>

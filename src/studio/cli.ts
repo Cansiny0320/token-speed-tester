@@ -24,19 +24,20 @@ export async function codexStreamTest(config: Config, options: StreamOptions = {
     const thread = await session.prepare(input);
     meter = new Measurement(thread.model);
     if (!options.quiet) console.log(`Codex model: ${thread.model}; effort: ${input.effort} (local token timing estimates)`);
-    const result = await session.run(thread, input, (text, elapsedMs) => {
-      meter!.add(text, elapsedMs);
+    const result = await session.run(thread, input, (text, elapsedMs, streamed) => {
+      meter!.add(text, elapsedMs, streamed);
       options.onText?.(text, elapsedMs);
       if (!options.quiet) process.stdout.write(text);
     }, abort.signal);
     const measurement = meter.finish(result.elapsedMs, result.usage);
     const tokens = meter.tokenTimes;
     meter = undefined;
+    if (measurement.ttftMs === null) throw new Error("Codex 未提供可见文本流式计时，无法生成 CLI 测速样本。");
     if (result.usage) options.onUsage?.(result.usage);
     if (!options.quiet) process.stdout.write("\n");
     // The existing CLI report uses the resolved model, not the literal "auto".
     config.model = result.model;
-    return { ttft: measurement.ttftMs ?? 0, tokens, totalTokens: measurement.outputTokens, totalTime: result.elapsedMs };
+    return { ttft: measurement.ttftMs, tokens, totalTokens: measurement.outputTokens, totalTime: result.elapsedMs };
   }
   catch (error) {
     if (abort.signal.aborted) throw abort.signal.reason;
