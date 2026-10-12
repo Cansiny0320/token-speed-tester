@@ -1,6 +1,6 @@
 # Token Speed Studio
 
-公开网页：<https://token-speed-studio.cansiny0320.chatgpt.site>。网页连接本机桌面软件后测速，桌面软件也可独立使用。
+公开网页：<https://token-speed-studio.cansiny0320.chatgpt.site>。网页连接本机桌面软件后测速，桌面软件也可独立使用。安装包与校验文件：<https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0>。
 
 ## 使用
 
