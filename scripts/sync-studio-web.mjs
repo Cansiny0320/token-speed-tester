@@ -10,5 +10,5 @@ const hosting = JSON.parse(await readFile(path.join(site, ".openai/hosting.json"
 if (!hosting.project_id) throw new Error("Sites project_id is required before building the public client.");
 await writeFile(path.join(site, "src/site-info.json"), JSON.stringify({
   siteUrl: "https://token-speed-studio.cansiny0320.chatgpt.site",
-  sourceUrl: "https://github.com/Cansiny0320/token-speed-tester",
+  sourceUrl: "https://github.com/Cansiny0320/token-speed-tester/tree/desktop-v1.0.0",
 }, null, 2) + "\n");

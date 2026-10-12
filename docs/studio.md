@@ -66,6 +66,6 @@ pnpm --dir apps/desktop exec electron-builder --linux --x64 --publish never
 
 `apps/site/.openai/hosting.json` 保存站点 ID；软件与网页的站点地址由 `scripts/sync-studio-web.mjs` 同步。本站是静态前端，测速请求发送到访问者电脑的 `127.0.0.1`，没有云端测速服务。
 
-Sites 通过独立源码发布副本同步，避免提交主仓其他未完成工作。先构建网页，再用 Sites source helper 同步和打包，保存版本并部署为 public。下载清单 `apps/site/src/downloads.json` 只填写已经发布并回读成功的真实安装包 URL；未发布的平台会明确显示状态。大型安装包需要独立的下载托管，例如 GitHub Releases。
+Sites 通过独立源码发布副本同步，避免提交主仓其他未完成工作。先构建网页，再用 Sites source helper 同步和打包，保存版本并部署为 public。下载清单 `apps/site/src/downloads.json` 与 GitHub Release 安装包一同准备；发布安装包并回读真实 URL 成功后，再部署包含下载入口的网页。未配置的平台会明确显示状态。大型安装包需要独立的下载托管，例如 GitHub Releases。
 
 回滚：Sites 可部署前一保存版本；本地撤回本次新增模块和 CLI 连接补丁即可恢复原 API CLI，注意保留其他会话的修改。

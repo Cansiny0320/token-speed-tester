@@ -1,4 +1,30 @@
 {
   "version": "1.0.0",
-  "artifacts": []
+  "artifacts": [
+    {
+      "os": "mac",
+      "name": "Apple Silicon · DMG",
+      "url": "https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-mac-arm64.dmg"
+    },
+    {
+      "os": "mac",
+      "name": "Intel · DMG",
+      "url": "https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-mac-x64.dmg"
+    },
+    {
+      "os": "win",
+      "name": "Windows x64 · EXE",
+      "url": "https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-win-x64.exe"
+    },
+    {
+      "os": "linux",
+      "name": "Linux x64 · AppImage",
+      "url": "https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-linux-x86_64.AppImage"
+    },
+    {
+      "os": "linux",
+      "name": "Debian / Ubuntu · deb",
+      "url": "https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-linux-amd64.deb"
+    }
+  ]
 }
