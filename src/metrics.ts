@@ -3,7 +3,7 @@
  */
 export interface StreamMetrics {
   ttft: number; // Time to First Token (ms)
-  tokens: number[]; // 每个 token 的到达时间（相对开始时间，单位：ms）
+  tokens: number[]; // 本地完整文本分词后，token 最后一个字节的到达时间（ms）
   totalTokens: number;
   totalTime: number;
 }
@@ -60,31 +60,29 @@ export function calculateAverageSpeed(metrics: StreamMetrics): number {
 }
 
 /**
- * 计算峰值速度 - 最快连续 N 个 token 的平均速度
+ * 至少 N 个 token 的滑动窗口；优先扩展到 50ms，短流使用真实可观察时长。
  */
 const MIN_PEAK_WINDOW_MS = 50;
 
 export function calculatePeakSpeed(metrics: StreamMetrics, windowSize: number = 10): number {
-  if (metrics.tokens.length < windowSize) {
-    // 如果 token 数少于窗口大小，使用全部 token 计算
-    if (metrics.tokens.length < 2) {
-      return 0;
-    }
-    const totalTime = metrics.tokens[metrics.tokens.length - 1] - metrics.tokens[0];
-    const durationMs = Math.max(totalTime, MIN_PEAK_WINDOW_MS);
-    return ((metrics.tokens.length - 1) / durationMs) * 1000;
-  }
+  const { tokens } = metrics;
+  if (tokens.length < 2) return 0;
 
+  const minTokens = Math.min(Math.max(windowSize, 2), tokens.length);
+  let right = 0;
   let maxSpeed = 0;
-  for (let i = 0; i <= metrics.tokens.length - windowSize; i++) {
-    const startTime = metrics.tokens[i];
-    const endTime = metrics.tokens[i + windowSize - 1];
-    const duration = endTime - startTime;
-    const durationMs = Math.max(duration, MIN_PEAK_WINDOW_MS);
-    const speed = ((windowSize - 1) / durationMs) * 1000;
-    maxSpeed = Math.max(maxSpeed, speed);
+  for (let left = 0; left <= tokens.length - minTokens; left++) {
+    right = Math.max(right, left + minTokens - 1);
+    // Include the entire last batch; do not split tokens with identical timestamps.
+    while (right + 1 < tokens.length
+      && (tokens[right] - tokens[left] < MIN_PEAK_WINDOW_MS || tokens[right + 1] === tokens[right])) {
+      right++;
+    }
+    const duration = tokens[right] - tokens[left];
+    if (duration > 0) {
+      maxSpeed = Math.max(maxSpeed, ((right - left) / duration) * 1000);
+    }
   }
-
   return maxSpeed;
 }
 
@@ -97,7 +95,7 @@ export function calculateTPS(metrics: StreamMetrics): number[] {
   }
 
   const totalDuration = metrics.tokens[metrics.tokens.length - 1];
-  const totalSeconds = Math.ceil(totalDuration / 1000);
+  const totalSeconds = Math.floor(totalDuration / 1000) + 1;
 
   if (totalSeconds <= 0) {
     return metrics.tokens.length > 0 ? [metrics.tokens.length] : [];

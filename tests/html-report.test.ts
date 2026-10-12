@@ -99,6 +99,32 @@ describe("html-report", () => {
     sampleSize: 3,
   };
 
+  it("preserves dollar replacement sequences and template-like prompt text", () => {
+    const result = generateHTMLReport({
+      config: { ...mockConfig, prompt: "$& $$ $` $' {{charts}} <script>" },
+      singleResults: mockSingleResults,
+      stats: mockStats,
+      lang: "en",
+      messages: getMessages("en"),
+    });
+    expect(result).toContain("$&amp; $$ $` $&#039; {{charts}} &lt;script&gt;");
+  });
+
+  it("labels the full duration when the speed chart exceeds ten seconds", () => {
+    const result = generateHTMLReport({
+      config: mockConfig,
+      singleResults: [{ ...mockSingleResults[0], tps: new Array(30).fill(10) }],
+      stats: mockStats,
+      lang: "en",
+      messages: getMessages("en"),
+    });
+    const chart = result.match(/<svg[^>]*id="speedChart">([\s\S]*?)<\/svg>/)?.[1] ?? "";
+    const labels = [...chart.matchAll(/<text[^>]*y="295"[^>]*>(.*?)<\/text>/g)].map(match => match[1]);
+    expect(labels).toHaveLength(10);
+    expect(labels[0]).toBe("0s");
+    expect(labels.at(-1)).toBe("29s");
+  });
+
   describe("generateHTMLReport", () => {
     it("should generate HTML with Chinese content", () => {
       const messages = getMessages("zh");

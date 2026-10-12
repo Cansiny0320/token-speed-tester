@@ -1,20 +1,19 @@
 import type { Config } from "./config.js";
 import type { StreamMetrics } from "./metrics.js";
+import { Buffer } from "node:buffer";
 import { performance } from "node:perf_hooks";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 import { getMessages } from "./i18n.js";
 import { createTokenizer } from "./tokenizer.js";
 
-interface StreamResult {
-  ttft: number;
-  tokens: number[];
-  totalTokens: number;
-  totalTime: number;
+interface StreamEvent {
+  text?: string;
+  outputTokens?: number;
 }
 
 interface StreamProcessor {
-  stream: () => AsyncIterable<{ text: string }>;
+  stream: () => AsyncIterable<StreamEvent>;
   providerName: string;
 }
 
@@ -26,7 +25,7 @@ class AnthropicStreamProcessor implements StreamProcessor {
     private config: Config,
   ) {}
 
-  async* stream(): AsyncIterable<{ text: string }> {
+  async* stream(): AsyncIterable<StreamEvent> {
     const stream = await this.client.messages.create({
       model: this.config.model,
       max_tokens: this.config.maxTokens,
@@ -35,6 +34,9 @@ class AnthropicStreamProcessor implements StreamProcessor {
     });
 
     for await (const event of stream) {
+      if (event.type === "message_delta") {
+        yield { outputTokens: event.usage.output_tokens };
+      }
       if (
         event.type === "content_block_delta"
         && event.delta.type === "text_delta"
@@ -54,15 +56,27 @@ class OpenAIStreamProcessor implements StreamProcessor {
     private config: Config,
   ) {}
 
-  async* stream(): AsyncIterable<{ text: string }> {
+  async* stream(): AsyncIterable<StreamEvent> {
+    // Keep legacy parameters for older models and compatible providers.
+    const modernTokenLimit = /^(?:gpt-[5-9](?:[.-]|$)|o[1-9](?:[.-]|$))/.test(this.config.model);
+    const officialEndpoint = new URL(this.client.baseURL).hostname === "api.openai.com";
     const stream = await this.client.chat.completions.create({
       model: this.config.model,
-      max_tokens: this.config.maxTokens,
+      ...(modernTokenLimit
+        ? { max_completion_tokens: this.config.maxTokens }
+        : { max_tokens: this.config.maxTokens }),
+      ...(officialEndpoint ? { stream_options: { include_usage: true } } : {}),
       messages: [{ role: "user", content: this.config.prompt }],
       stream: true,
     });
 
     for await (const chunk of stream) {
+      if (chunk.usage) {
+        yield {
+          outputTokens: chunk.usage.completion_tokens
+            - (chunk.usage.completion_tokens_details?.reasoning_tokens ?? 0),
+        };
+      }
       const delta = chunk.choices[0]?.delta;
       if (delta?.content) {
         yield { text: delta.content };
@@ -73,40 +87,46 @@ class OpenAIStreamProcessor implements StreamProcessor {
 
 async function runStreamTest(
   processor: StreamProcessor,
-  startTime: number,
   encoding: ReturnType<typeof createTokenizer>,
-): Promise<StreamResult> {
-  const tokenTimes: number[] = [];
-  let ttft = 0;
-  let firstTokenRecorded = false;
-  let tokenCount = 0;
-  let wroteOutput = false;
+): Promise<StreamMetrics> {
+  const chunks: { text: string; time: number; byteEnd: number }[] = [];
+  let outputTokens: number | undefined;
+  let byteLength = 0;
+  const startTime = performance.now();
 
   try {
-    for await (const { text } of processor.stream()) {
-      if (text.length > 0) {
-        process.stdout.write(text);
-        wroteOutput = true;
-
-        const encoded = encoding.encode(text);
-        const newTokens = encoded.length;
-
-        if (newTokens > 0) {
-          const currentTime = performance.now();
-
-          if (!firstTokenRecorded) {
-            ttft = currentTime - startTime;
-            firstTokenRecorded = true;
-          }
-
-          for (let i = 0; i < newTokens; i++) {
-            tokenTimes.push(currentTime - startTime);
-          }
-
-          tokenCount += newTokens;
-        }
+    for await (const event of processor.stream()) {
+      const elapsed = performance.now() - startTime;
+      if (event.outputTokens !== undefined) {
+        outputTokens = event.outputTokens;
+      }
+      if (event.text) {
+        byteLength += Buffer.byteLength(event.text);
+        chunks.push({ text: event.text, time: elapsed, byteEnd: byteLength });
+        process.stdout.write(event.text);
       }
     }
+    const totalTime = performance.now() - startTime;
+
+    // Encode once after timing ends: BPE tokens can span multiple stream chunks.
+    const encoded = encoding.encode(chunks.map(chunk => chunk.text).join(""), [], []);
+    const tokenTimes: number[] = [];
+    let tokenByteEnd = 0;
+    let chunkIndex = 0;
+    for (const token of encoded) {
+      tokenByteEnd += encoding.decode_single_token_bytes(token).length;
+      while (chunkIndex < chunks.length - 1 && chunks[chunkIndex].byteEnd < tokenByteEnd) {
+        chunkIndex++;
+      }
+      tokenTimes.push(chunks[chunkIndex].time);
+    }
+
+    return {
+      ttft: chunks[0]?.time ?? 0,
+      tokens: tokenTimes,
+      totalTokens: outputTokens ?? encoded.length,
+      totalTime,
+    };
   }
   catch (error) {
     if (error instanceof Error) {
@@ -115,50 +135,37 @@ async function runStreamTest(
     throw error;
   }
   finally {
-    if (wroteOutput) {
+    encoding.free();
+    if (chunks.length > 0) {
       process.stdout.write("\n");
     }
-    encoding.free();
   }
-
-  const endTime = performance.now();
-
-  return {
-    ttft,
-    tokens: tokenTimes,
-    totalTokens: tokenCount,
-    totalTime: endTime - startTime,
-  };
 }
 
 /**
  * 执行 Anthropic API 流式测试
  */
 export async function anthropicStreamTest(config: Config): Promise<StreamMetrics> {
-  const startTime = performance.now();
-  const encoding = createTokenizer(config.model);
   const client = new Anthropic({
     apiKey: config.apiKey,
     baseURL: config.baseURL,
   });
 
   const processor = new AnthropicStreamProcessor(client, config);
-  return runStreamTest(processor, startTime, encoding);
+  return runStreamTest(processor, createTokenizer(config.model));
 }
 
 /**
  * 执行 OpenAI API 流式测试
  */
 export async function openaiStreamTest(config: Config): Promise<StreamMetrics> {
-  const startTime = performance.now();
-  const encoding = createTokenizer(config.model);
   const client = new OpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseURL,
   });
 
   const processor = new OpenAIStreamProcessor(client, config);
-  return runStreamTest(processor, startTime, encoding);
+  return runStreamTest(processor, createTokenizer(config.model));
 }
 
 /**

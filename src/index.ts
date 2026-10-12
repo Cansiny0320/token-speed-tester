@@ -9,7 +9,7 @@ import { Command } from "commander";
 import open from "open";
 import { renderReport, renderSingleResult } from "./chart.js";
 import { runMultipleTests } from "./client.js";
-import { parseConfig } from "./config.js";
+import { parseConfig, validateConfig } from "./config.js";
 import { generateCSVExport, generateJSONExport } from "./export.js";
 import { generateHTMLReport } from "./html-report.js";
 import { DEFAULT_LANG, getMessages } from "./i18n.js";
@@ -58,14 +58,16 @@ async function main() {
       provider: options.provider as Provider,
       url: options.url,
       model: options.model,
-      maxTokens: Number.parseInt(options.maxTokens, 10),
-      runs: Number.parseInt(options.runs, 10),
+      maxTokens: Number(options.maxTokens),
+      runs: Number(options.runs),
       prompt: options.prompt,
       lang: options.lang,
       outputFormat: options.outputFormat as OutputFormat,
       outputPath: options.output,
     });
     messages = getMessages(config.lang);
+    const validation = validateConfig(config);
+    if (!validation.valid) throw new Error(validation.error);
 
     // 显示配置信息
     console.log(chalk.cyan(`\n${messages.appTitle}`));

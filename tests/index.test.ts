@@ -1,319 +1,139 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { runMultipleTests } from "../src/client.js";
-import { parseConfig } from "../src/config.js";
-import { calculateMetrics, calculateStats } from "../src/metrics.js";
+import type { AddressInfo } from "node:net";
+import { Buffer } from "node:buffer";
+import { spawn } from "node:child_process";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { createServer } from "node:http";
+import { createRequire } from "node:module";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-// Mock all dependencies to avoid actual execution
-vi.mock("../src/config.js", () => ({
-  parseConfig: vi.fn(),
-  getDefaultModel: vi.fn(() => "test-model"),
-}));
+const entry = fileURLToPath(new URL("../src/index.ts", import.meta.url));
+const loader = createRequire(import.meta.url).resolve("tsx");
+let directory: string;
+let requests: Record<string, unknown>[];
+let failRequest: boolean;
+let endpoint: string;
+const server = createServer(async (req, res) => {
+  const parts: Buffer[] = [];
+  for await (const part of req) parts.push(Buffer.from(part));
+  requests.push(JSON.parse(Buffer.concat(parts).toString()));
+  if (failRequest) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: { message: "fixture rejection", type: "invalid_request_error" } }));
+    return;
+  }
+  res.writeHead(200, { "Content-Type": "text/event-stream" });
+  if (req.url === "/v1/messages") {
+    const events = [
+      { type: "message_start", message: { id: "fixture", type: "message", role: "assistant", content: [], model: "claude-test", usage: { input_tokens: 1, output_tokens: 0 } } },
+      { type: "content_block_start", index: 0, content_block: { type: "text", text: "" } },
+      { type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "hello" } },
+      { type: "content_block_stop", index: 0 },
+      { type: "message_delta", delta: { stop_reason: "end_turn", stop_sequence: null }, usage: { output_tokens: 7 } },
+      { type: "message_stop" },
+    ];
+    for (const event of events) res.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
+    res.end();
+    return;
+  }
+  for (const content of ["hel", "lo"]) {
+    res.write(`data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`);
+  }
+  res.end("data: [DONE]\n\n");
+});
 
-vi.mock("../src/client.js", () => ({
-  runMultipleTests: vi.fn(),
-}));
+beforeEach(async () => {
+  directory = await mkdtemp(join(tmpdir(), "token-speed-cli-"));
+  requests = [];
+  failRequest = false;
+  await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
+  endpoint = `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`;
+});
+afterEach(async () => {
+  server.closeAllConnections();
+  await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+  await rm(directory, { recursive: true, force: true });
+});
 
-vi.mock("../src/metrics.js", () => ({
-  calculateMetrics: vi.fn(m => ({
-    ttft: m.ttft,
-    totalTime: m.totalTime,
-    totalTokens: m.totalTokens,
-    averageSpeed: 50,
-    peakSpeed: 60,
-    peakTps: 30,
-    tps: [10, 20],
-  })),
-  calculateStats: vi.fn(() => ({
-    mean: {
-      ttft: 100,
-      totalTime: 1000,
-      totalTokens: 50,
-      averageSpeed: 50,
-      peakSpeed: 60,
-      peakTps: 30,
-      tps: [10, 20],
-    },
-    min: {
-      ttft: 80,
-      totalTime: 900,
-      totalTokens: 40,
-      averageSpeed: 45,
-      peakSpeed: 55,
-      peakTps: 25,
-      tps: [],
-    },
-    max: {
-      ttft: 120,
-      totalTime: 1100,
-      totalTokens: 60,
-      averageSpeed: 55,
-      peakSpeed: 65,
-      peakTps: 35,
-      tps: [],
-    },
-    stdDev: {
-      ttft: 10,
-      totalTime: 50,
-      totalTokens: 5,
-      averageSpeed: 2,
-      peakSpeed: 3,
-      peakTps: 4,
-      tps: [],
-    },
-    percentiles: {
-      ttft: { p50: 100, p95: 118, p99: 119 },
-      totalTime: { p50: 1000, p95: 1090, p99: 1098 },
-      totalTokens: { p50: 50, p95: 59, p99: 59.8 },
-      averageSpeed: { p50: 50, p95: 54, p99: 55 },
-      peakSpeed: { p50: 60, p95: 64, p99: 65 },
-      peakTps: { p50: 30, p95: 34, p99: 34.8 },
-    },
-    sampleSize: 2,
-  })),
-}));
-
-vi.mock("../src/chart.js", () => ({
-  renderReport: vi.fn(() => "Mock Report"),
-  renderSingleResult: vi.fn(() => "Mock Single Result"),
-}));
-
-vi.mock("chalk", () => ({
-  default: {
-    cyan: (s: string) => s,
-    gray: (s: string) => s,
-    yellow: (s: string) => s,
-    green: (s: string) => s,
-    red: (s: string) => s,
-    white: (s: string) => s,
-  },
-}));
-
-vi.mock("commander", () => ({
-  Command: vi.fn().mockImplementation(() => ({
-    name: vi.fn().mockReturnThis(),
-    description: vi.fn().mockReturnThis(),
-    version: vi.fn().mockReturnThis(),
-    option: vi.fn().mockReturnThis(),
-    parse: vi.fn().mockReturnThis(),
-    opts: vi.fn().mockReturnValue({
-      apiKey: "test-key",
-      provider: "anthropic",
-      model: "test-model",
-      maxTokens: "1024",
-      runs: "2",
-      prompt: "Test prompt",
-    }),
-  })),
-}));
-
-const mockParseConfig = vi.mocked(parseConfig);
-const mockRunMultipleTests = vi.mocked(runMultipleTests);
-const mockCalculateMetrics = vi.mocked(calculateMetrics);
-const mockCalculateStats = vi.mocked(calculateStats);
-
-describe("index (CLI entry point)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    // Suppress console output during tests
-    vi.spyOn(console, "log").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
+function cli(args: string[]) {
+  return new Promise<{ code: number | null; stdout: string; stderr: string }>((resolve, reject) => {
+    const child = spawn(process.execPath, ["--import", loader, entry, "--api-key", "local-test-key", "--url", endpoint, "--runs", "1", "--lang", "en", ...args], {
+      cwd: directory,
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 20000,
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (data) => {
+      stdout += data;
+    });
+    child.stderr.on("data", (data) => {
+      stderr += data;
+    });
+    child.on("error", reject);
+    child.on("close", code => resolve({ code, stdout, stderr }));
   });
+}
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+describe("real CLI with a local streaming API", () => {
+  it("writes a JSON report and sends the default model's token limit", async () => {
+    const result = await cli(["--output-format", "json", "--output", "result.json", "--runs", "2"]);
+    expect(result.code, result.stderr).toBe(0);
+    expect(requests).toHaveLength(2);
+    expect(requests[0]).toMatchObject({ model: "gpt-5.2", max_completion_tokens: 1024, stream: true });
+    expect(requests[0]).not.toHaveProperty("max_tokens");
+    const report = JSON.parse(await readFile(join(directory, "result.json"), "utf-8"));
+    expect(report.runs).toHaveLength(2);
+    expect(report.runs[0].totalTokens).toBe(1);
+    expect(report.runs[0].tps.reduce((sum: number, n: number) => sum + n, 0)).toBe(1);
+    expect(report.config).not.toHaveProperty("apiKey");
+  }, 30000);
 
-  describe("config validation through CLI flow", () => {
-    it("should accept valid Anthropic config", () => {
-      mockParseConfig.mockReturnValue({
-        provider: "anthropic",
-        apiKey: "sk-test",
-        model: "claude-opus-4-5-20251101",
-        maxTokens: 1024,
-        runCount: 3,
-        prompt: "Test",
-        lang: "zh",
-        outputFormat: "terminal",
-        outputPath: "report",
-      });
+  it("writes CSV and retains legacy model request parameters", async () => {
+    const result = await cli(["-m", "gpt-4", "-f", "csv", "-o", "result.csv"]);
+    expect(result.code, result.stderr).toBe(0);
+    expect(requests[0]).toHaveProperty("max_tokens", 1024);
+    const report = await readFile(join(directory, "result.csv"), "utf-8");
+    expect(report).toContain("# Individual Runs");
+    expect(report).toContain("# Model: gpt-4");
+  }, 30000);
 
-      const config = parseConfig({
-        apiKey: "sk-test",
-        provider: "anthropic",
-      });
+  it("reads Anthropic usage through the real SDK", async () => {
+    const result = await cli(["-p", "anthropic", "--url", endpoint.replace(/\/v1$/, ""), "-m", "claude-test", "-f", "json", "-o", "anthropic.json"]);
+    expect(result.code, result.stderr).toBe(0);
+    expect(requests[0]).toMatchObject({ model: "claude-test", max_tokens: 1024 });
+    const report = JSON.parse(await readFile(join(directory, "anthropic.json"), "utf-8"));
+    expect(report.runs[0].totalTokens).toBe(7);
+    expect(report.runs[0].tps.reduce((sum: number, n: number) => sum + n, 0)).toBe(1);
+  }, 30000);
 
-      expect(config.provider).toBe("anthropic");
-      expect(config.apiKey).toBe("sk-test");
-    });
+  it("renders terminal output", async () => {
+    const result = await cli(["-f", "terminal"]);
+    expect(result.code, result.stderr).toBe(0);
+    expect(result.stdout).toContain("hello");
+    expect(result.stdout).toContain("TTFT");
+  }, 30000);
 
-    it("should accept valid OpenAI config", () => {
-      mockParseConfig.mockReturnValue({
-        provider: "openai",
-        apiKey: "sk-test",
-        model: "gpt-5.2",
-        maxTokens: 1024,
-        runCount: 3,
-        prompt: "Test",
-        lang: "zh",
-        outputFormat: "terminal",
-        outputPath: "report",
-      });
+  it.each([
+    ["--runs", "1.5"],
+    ["--runs", "2abc"],
+    ["--max-tokens", "3.5"],
+    ["--prompt", "   "],
+    ["--output", "   "],
+    ["--api-key", ""],
+  ])("rejects invalid %s %s before sending a request", async (flag, value) => {
+    const result = await cli(["-f", "json", flag, value]);
+    expect(result.code).toBe(1);
+    expect(result.stderr.trim()).not.toBe("");
+    expect(requests).toHaveLength(0);
+  }, 30000);
 
-      const config = parseConfig({
-        apiKey: "sk-test",
-        provider: "openai",
-      });
-
-      expect(config.provider).toBe("openai");
-    });
-
-    it("should handle custom runs parameter", () => {
-      mockParseConfig.mockReturnValue({
-        provider: "anthropic",
-        apiKey: "sk-test",
-        model: "test-model",
-        maxTokens: 1024,
-        runCount: 5,
-        prompt: "Test",
-        lang: "zh",
-        outputFormat: "terminal",
-        outputPath: "report",
-      });
-
-      const config = parseConfig({
-        apiKey: "sk-test",
-        runs: 5,
-      });
-
-      expect(config.runCount).toBe(5);
-    });
-  });
-
-  describe("main flow components", () => {
-    it("should handle successful test run flow", async () => {
-      mockParseConfig.mockReturnValue({
-        provider: "anthropic",
-        apiKey: "test-key",
-        model: "test-model",
-        maxTokens: 1024,
-        runCount: 2,
-        prompt: "Test prompt",
-        lang: "zh",
-        outputFormat: "terminal",
-        outputPath: "report",
-      });
-
-      const mockResults = [
-        { ttft: 100, tokens: [100, 200], totalTokens: 2, totalTime: 200 },
-        { ttft: 150, tokens: [150, 250], totalTokens: 2, totalTime: 250 },
-      ];
-      mockRunMultipleTests.mockResolvedValue(mockResults);
-
-      // Simulate the flow
-      const config = parseConfig({
-        apiKey: "test-key",
-        provider: "anthropic",
-      });
-
-      const results = await runMultipleTests(config);
-      const allMetrics = results.map(r => calculateMetrics(r));
-      const stats = calculateStats(allMetrics);
-
-      expect(mockRunMultipleTests).toHaveBeenCalledWith(config);
-      expect(mockCalculateMetrics).toHaveBeenCalledTimes(2);
-      expect(mockCalculateStats).toHaveBeenCalled();
-      expect(stats.sampleSize).toBe(2);
-    });
-  });
-
-  describe("error handling", () => {
-    it("should reject empty API key", () => {
-      mockParseConfig.mockImplementation(() => {
-        throw new Error("API Key is required");
-      });
-
-      expect(() =>
-        parseConfig({
-          apiKey: "",
-        }),
-      ).toThrow("API Key is required");
-    });
-
-    it("should reject invalid provider", () => {
-      mockParseConfig.mockImplementation(() => {
-        throw new Error("Invalid provider");
-      });
-
-      expect(() =>
-        parseConfig({
-          apiKey: "sk-test",
-          provider: "invalid" as never,
-        }),
-      ).toThrow("Invalid provider");
-    });
-
-    it("should reject negative runs", () => {
-      mockParseConfig.mockImplementation(() => {
-        throw new Error("Invalid runs");
-      });
-
-      expect(() =>
-        parseConfig({
-          apiKey: "sk-test",
-          runs: -1,
-        }),
-      ).toThrow("Invalid runs");
-    });
-  });
-
-  describe("parameter parsing edge cases", () => {
-    it("should handle minimal config", () => {
-      mockParseConfig.mockReturnValue({
-        provider: "anthropic",
-        apiKey: "sk-test",
-        model: "claude-opus-4-5-20251101",
-        maxTokens: 1024,
-        runCount: 3,
-        prompt: "写一篇关于 AI 的短文",
-        lang: "zh",
-        outputFormat: "terminal",
-        outputPath: "report",
-      });
-
-      const config = parseConfig({ apiKey: "sk-test" });
-
-      expect(config.provider).toBe("anthropic");
-      expect(config.runCount).toBe(3);
-      expect(config.maxTokens).toBe(1024);
-    });
-
-    it("should handle all custom parameters", () => {
-      mockParseConfig.mockReturnValue({
-        provider: "openai",
-        apiKey: "sk-test",
-        model: "gpt-4",
-        maxTokens: 2048,
-        runCount: 10,
-        prompt: "Custom prompt",
-        baseURL: "https://api.test.com",
-        lang: "en",
-        outputFormat: "terminal",
-        outputPath: "report",
-      });
-
-      const config = parseConfig({
-        apiKey: "sk-test",
-        provider: "openai",
-        model: "gpt-4",
-        url: "https://api.test.com",
-        maxTokens: 2048,
-        runs: 10,
-        prompt: "Custom prompt",
-      });
-
-      expect(config.model).toBe("gpt-4");
-      expect(config.baseURL).toBe("https://api.test.com");
-      expect(config.runCount).toBe(10);
-    });
-  });
+  it("exits unsuccessfully on an API rejection", async () => {
+    failRequest = true;
+    const result = await cli(["-f", "json"]);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("fixture rejection");
+  }, 30000);
 });

@@ -21,7 +21,7 @@ A powerful command-line tool for testing token output speed of LLM APIs. Support
 - **Comprehensive Metrics**:
   - **TTFT** (Time to First Token): Latency before first token arrives
   - **Average Speed**: Mean tokens per second
-  - **Peak Speed**: Fastest speed over a 10-token window
+  - **Peak Speed**: Fastest speed over an adaptive token window
   - **Peak TPS**: Highest tokens received within a single second
   - **TPS Curve**: Tokens received per second throughout the stream
 - **Statistical Analysis**: Mean, P50/P95/P99, min, and max across multiple test runs
@@ -224,11 +224,15 @@ The report will automatically open in your browser after generation.
 | **Total Time**    | Complete duration from request to stream completion               |
 | **Total Tokens**  | Number of output tokens received                                  |
 | **Average Speed** | Mean tokens per second (totalTokens / totalTime x 1000)           |
-| **Peak Speed**    | Fastest speed measured over a sliding 10-token window             |
+| **Peak Speed**    | Fastest speed over at least 10 tokens, extending toward 50ms             |
 | **Peak TPS**      | Highest tokens received within a single second                    |
 | **TPS Curve**     | Tokens received per second throughout the streaming response      |
 
-Note: Token counting uses the model tokenizer per stream chunk; boundary splits may cause slight differences.
+Note: Total tokens prefer server usage (subtracting separately reported OpenAI reasoning tokens), falling back to tokenizing the complete output text. Official OpenAI endpoints request streaming usage; custom endpoints are not required to support `stream_options`, but returned usage is used when available.
+
+TPS and peak speed use local tokenization of the complete visible text. Each token is assigned the arrival time of the chunk containing its final byte. These client-side estimates may differ from server totals; unknown models use `cl100k_base`. Peak windows expand toward 50ms and use the actual observed duration for short streams. If all tokens arrive simultaneously, the generation rate cannot be inferred and peak speed is 0. TTFT is recorded at the first non-empty text; total time excludes tokenizer initialization, post-stream tokenization, and cleanup.
+
+OpenAI GPT-5 and later families and o-series models use `max_completion_tokens`, which includes reasoning tokens. Older models and other compatible models retain `max_tokens`.
 
 ## Development
 

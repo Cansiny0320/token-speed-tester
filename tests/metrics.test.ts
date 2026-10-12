@@ -412,3 +412,26 @@ describe("metrics", () => {
     });
   });
 });
+
+describe("measurement regressions", () => {
+  function stream(tokens: number[]): StreamMetrics {
+    return { ttft: tokens[0] ?? 0, tokens, totalTokens: tokens.length, totalTime: tokens.at(-1) ?? 0 };
+  }
+
+  it("preserves tokens at the final exact-second boundary", () => {
+    expect(calculateTPS(stream([100, 500, 1000]))).toEqual([2, 1]);
+    expect(calculateTPS(stream([1000, 1000]))).toEqual([0, 2]);
+  });
+
+  it("measures high throughput without capping at 180 tokens/s", () => {
+    expect(calculatePeakSpeed(stream(Array.from({ length: 100 }, (_, i) => 100 + i)))).toBe(1000);
+  });
+
+  it("does not invent a rate for a single simultaneous batch", () => {
+    expect(calculatePeakSpeed(stream(new Array(20).fill(100)))).toBe(0);
+  });
+
+  it("expands the token window to cover a real time interval", () => {
+    expect(calculatePeakSpeed(stream([...new Array(20).fill(100), ...new Array(20).fill(200)]))).toBe(390);
+  });
+});

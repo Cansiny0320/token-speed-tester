@@ -81,11 +81,9 @@ function loadTemplate(): string {
 }
 
 function replaceTemplate(template: string, data: TemplateData): string {
-  let result = template;
-  for (const [key, value] of Object.entries(data)) {
-    result = result.replaceAll(new RegExp(`{{${key}}}`, "g"), value);
-  }
-  return result;
+  return template.replace(/\{\{(\w+)\}\}/g, (placeholder, key: string) => {
+    return Object.hasOwn(data, key) ? data[key as keyof TemplateData] : placeholder;
+  });
 }
 
 function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): string {
@@ -191,7 +189,7 @@ function generateSpeedChart(results: CalculatedMetrics[], messages: Messages): s
   const xSteps = Math.min(maxDuration, 10);
   for (let i = 0; i < xSteps; i++) {
     const x = padding.left + (i / Math.max(xSteps - 1, 1)) * chartWidth;
-    const label = i.toString();
+    const label = Math.round((i / Math.max(xSteps - 1, 1)) * (maxDuration - 1)).toString();
     xLabels.push(
       `<text x="${x}" y="${height - padding.bottom + 20}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlTimeUnit}</text>`,
     );
@@ -314,7 +312,7 @@ function generateTPSHistogram(stats: StatsResult, messages: Messages): string {
   const xSteps = Math.min(allTps.length, 8);
   for (let i = 0; i < xSteps; i++) {
     const x = padding.left + (i / Math.max(xSteps - 1, 1)) * chartWidth;
-    const label = i.toString();
+    const label = Math.round((i / Math.max(xSteps - 1, 1)) * (allTps.length - 1)).toString();
     xLabels.push(
       `<text x="${x}" y="${height - padding.bottom + 18}" text-anchor="middle" font-size="11" fill="${PALETTE.textMuted}">${label}${messages.htmlTimeUnit}</text>`,
     );
