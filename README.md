@@ -1,33 +1,52 @@
-# Token 速度测试工具
+# Token Speed Tester / Studio
 
-> 用于测量和分析 LLM API Token 流式输出性能的命令行工具
+> 测量 LLM 与 Codex 的首字延迟、Token 吞吐和流式输出速度，支持 CLI、网页及 macOS / Windows / Linux 桌面端。
 
-[English](README.en.md)
+[English](README.en.md) · [打开网页](https://token-speed-studio.cansiny0320.chatgpt.site) · [下载桌面版](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0) · [Studio 文档](docs/studio.md)
 
 [![npm version](https://img.shields.io/npm/v/token-speed-tester)](https://www.npmjs.com/package/token-speed-tester)
 [![开源协议](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/ci.yml/badge.svg)](https://github.com/Cansiny0320/token-speed-tester/actions/workflows/ci.yml)
 
 <p align="center">
-  <img src="./docs/images/html-report-zh.png" alt="HTML 报告预览" width="800">
+  <img src="./docs/images/studio.png" alt="Studio 中一次真实 Codex 短样本的历史报告" width="800">
 </p>
 
-一个强大的命令行工具，用于测试 LLM API 的 Token 输出速度。支持 **Anthropic** 和 **OpenAI** 兼容的 API，提供详细指标包括 TTFT（首字延迟）、吞吐量、峰值速度以及多次运行的统计分析。
+**Token Speed Studio** 提供桌面与网页工作台，**token-speed-tester** 提供 CLI。支持本机已登录的 **Codex / ChatGPT 订阅账号**、**OpenAI Chat Completions** 和 **Anthropic Messages**。截图为一次真实短样本的历史报告，仅用于展示界面，不代表模型性能基准。
 
 ## 特性
 
-- **双协议支持**：兼容 Anthropic Messages API 和 OpenAI Chat Completions API
-- **流式性能测量**：以毫秒级精度记录每个 Token 的到达时间
-- **全面指标**：
-  - **TTFT**（首字延迟）：首个 Token 到达前的延迟
-  - **平均速度**：每秒平均 Token 数
-  - **峰值速度**：自适应 Token 滑动窗口内的最快速度
-  - **峰值 TPS**：单秒内的最高 Token 数
-  - **TPS 曲线**：整个流式响应中每秒接收的 Token 数
-- **统计分析**：多次测试运行的均值、P50/P95/P99、最小值和最大值
-- **ASCII 可视化**：精美的终端图表和数据表格
-- **HTML 报告**：生成包含 SVG 图表的交互式 HTML 报告
-- **自定义端点**：测试兼容 OpenAI/Anthropic 协议的第三方 API
+- **三种接入方式**：本机 Codex、OpenAI 兼容 API、Anthropic 兼容 API。
+- **网页与桌面**：实时文本和 TPS 曲线；桌面版可独立运行，网页通过配对码连接本机软件。
+- **测速指标**：TTFT、平均吞吐、单秒峰值、多轮统计；Studio 单独记录初始化耗时、输出和推理用量。
+- **Codex 控制**：模型、推理强度、重复次数、超时与取消。每轮独立临时会话，禁用工具、MCP、插件和 hooks。
+- **本地报告**：JSON / CSV / HTML 导出；Studio 保留最近 6 份本地报告，并支持导入自己的 JSON 报告。失败或取消轮次不进入 Studio 汇总。
+- **CLI**：终端图表、自定义端点、中英文输出和报告；兼容原有 API 用法。
+
+Codex 登录凭证留在本机，测试会消耗当前账号额度。可用模型与推理强度以本机 Codex 返回的信息为准。
+
+## 桌面版与网页
+
+公开网页是静态前端，测速由访问者电脑上的桌面软件执行，不提供云端账号或代跑服务。
+
+| 系统 | 安装包 |
+| --- | --- |
+| macOS Apple Silicon | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-mac-arm64.dmg) |
+| macOS Intel | [dmg](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-mac-x64.dmg) |
+| Windows x64 | [exe](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-win-x64.exe) |
+| Linux x64 · AppImage | [AppImage](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-linux-x86_64.AppImage) |
+| Debian / Ubuntu x64 | [deb](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/Token-Speed-Studio-1.0.0-linux-amd64.deb) |
+
+[完整发布与 ZIP 包](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0) · [SHA256SUMS.txt](https://github.com/Cansiny0320/token-speed-tester/releases/download/desktop-v1.0.0/SHA256SUMS.txt)。首版未签名或公证。macOS Apple Silicon 已完成真实测速；Intel Mac、Windows、Linux 已构建，尚未实机验收。
+
+1. 安装并打开桌面版。测试 Codex 时，先安装 Codex CLI 并执行 `codex login`；已登录的 ChatGPT 账号可直接复用。找不到可执行文件时，在软件中手动选择路径。
+2. 在桌面版选择接入方式、模型、提示词和次数，直接开始测速。API 模式填写对应的 API Key 和端点。
+3. 如需网页操作，打开[网页](https://token-speed-studio.cansiny0320.chatgpt.site)，填写桌面端显示的端口与配对码，在桌面弹窗中确认来源，并允许浏览器访问本地网络。
+4. 配对码 5 分钟有效，连接最长 8 小时，退出桌面版后失效。
+
+Chrome 已通过配对与真实测速验证。Codex 内置浏览器在本次验收中连接超时，遇到连接问题时可直接使用桌面版。
+
+**版本说明（2026-10-12）**：桌面版 `1.0.0` 已发布；npm 当前发布版为 `1.11.1`，本次 Studio / Codex 功能尚未发布到 npm。下方 npm 命令用于 API CLI；Codex 请使用桌面版或源码入口。
 
 ## 安装
 
@@ -85,154 +104,78 @@ token-speed-tester \
 
 # 生成 HTML 报告（包含 SVG 图表）
 token-speed-tester \
-  --api-key sk-ant-xxx \
+  --api-key sk-xxx \
   --output-format html \
   --output my-report.html
 
 # 生成 JSON 报告
 token-speed-tester \
-  --api-key sk-ant-xxx \
+  --api-key sk-xxx \
   --output-format json \
   --output report.json
 
 # 生成 CSV 报告
 token-speed-tester \
-  --api-key sk-ant-xxx \
+  --api-key sk-xxx \
   --output-format csv \
   --output report.csv
 
 # 组合使用：生成英文 HTML 报告
 token-speed-tester \
-  --api-key sk-ant-xxx \
+  --api-key sk-xxx \
   --runs 5 \
   --output-format html \
   -o performance-report.html \
   --lang en
 ```
 
-### 本地开发
+### 从源码运行 Codex
 
-```bash
-# 克隆并安装依赖
-git clone https://github.com/Cansiny0320/token-speed-tester.git
+以下命令使用 Studio 功能分支。固定复现桌面版 1.0.0 时，可将分支名换成 `desktop-v1.0.0`。
+
+```sh
+git clone --branch feat/token-speed-studio https://github.com/Cansiny0320/token-speed-tester.git
 cd token-speed-tester
-npm install
+pnpm install
+pnpm build
 
-# 使用 tsx 直接运行
-npm run dev -- --api-key=sk-ant-xxx
+# 本机已登录的 Codex，无需 API Key
+node dist/index.mjs --provider codex --runs 1 --effort low --output-format terminal
 
-# 或构建后运行
-npm run build
-node dist/index.mjs --api-key=sk-ant-xxx
+# 指定路径并导出报告
+node dist/index.mjs --provider codex --codex-path /path/to/codex \
+  --timeout 120000 --output-format json --output codex-report.json
 ```
 
-## 命令行选项
+省略 `--model` 使用本机 Codex 配置模型。`--max-tokens` 仅用于 API；Codex 通过提示词约束输出长度，以 `--timeout` 限制每轮耗时。
+
+## 当前源码的命令行选项
 
 | 选项              | 简写 | 说明                                     | 默认值                 |
 | ----------------- | ---- | ---------------------------------------- | ---------------------- |
-| `--api-key`       | `-k` | API Key（必填）                          | -                      |
-| `--provider`      | `-p` | API 类型：`anthropic` 或 `openai`        | `openai`               |
+| `--api-key`       | `-k` | API 模式必填；Codex 不需要                          | -                      |
+| `--provider`      | `-p` | 接入方式：`anthropic` / `openai` / `codex`        | `openai`               |
 | `--model`         | `-m` | 模型名称                                 | 根据提供商自动选择     |
 | `--url`           | `-u` | 自定义 API 端点                          | 官方端点               |
 | `--runs`          | `-r` | 测试次数                                 | `3`                    |
 | `--prompt`        |      | 测试提示词                               | "写一篇关于 AI 的短文" |
-| `--max-tokens`    |      | 最大输出 Token 数                        | `1024`                 |
+| `--max-tokens`    |      | API 最大输出 Token 数                        | `1024`                 |
 | `--lang`          |      | 输出语言: `zh` 或 `en`                   | `zh`                   |
 | `--output-format` | `-f` | 输出格式：`terminal`/`json`/`csv`/`html` | `html`                 |
 | `--output`        | `-o` | 输出文件路径（默认 `report.{ext}`）      | `report.{ext}`         |
+| `--codex-path` | | Codex 可执行文件路径 | 自动检测 |
+| `--effort` | | Codex 推理强度，需由所选模型支持 | `low` |
+| `--timeout` | | Codex 每轮超时，单位 ms，范围 `5000–600000` | `120000` |
 
 ### 默认模型
 
 - **Anthropic**: `claude-opus-4-5-20251101`
 - **OpenAI**: `gpt-5.2`
+- **Codex**: `auto`（本机配置模型）
 
-## 输出示例
+以上为项目配置值，可用 `--model` 覆盖，不代表最新模型或当前账号一定有权限。
 
-```
-🚀 Token 速度测试工具
-──────────────────────────────────────────
-Provider: openai
-Model: gpt-5.2
-Max Tokens: 1024
-Runs: 3
-Prompt: 写一篇关于 AI 的短文
-──────────────────────────────────────────
-
-⏳ 正在运行测试...
-
-模型输出 (流式):
-
-[运行 1]
-  TTFT: 523ms
-  总耗时: 3245ms
-  总 Token 数: 412
-  平均速度: 126.96 tokens/s
-  峰值速度: 156.32 tokens/s
-  峰值 TPS: 168.00 tokens/s
-
-[运行 2]
-  TTFT: 487ms
-  总耗时: 3189ms
-  总 Token 数: 398
-  平均速度: 124.84 tokens/s
-  峰值速度: 158.41 tokens/s
-  峰值 TPS: 171.00 tokens/s
-
-[运行 3]
-  TTFT: 501ms
-  总耗时: 3312ms
-  总 Token 数: 405
-  平均速度: 122.28 tokens/s
-  峰值速度: 154.23 tokens/s
-  峰值 TPS: 166.00 tokens/s
-
-======================================================================
-Token 速度测试报告
-======================================================================
-
-统计汇总 (N=3)
-┌──────────────────────────────────────────────────────────────────────┐
-│ 指标             │       均值 │      P50 │      P95 │      P99 │    最小值 │    最大值 │
-├──────────────────────────────────────────────────────────────────────┤
-│ TTFT (ms)       │    503.67 │   501.00 │   520.00 │   523.00 │   487.00 │   523.00 │
-├──────────────────────────────────────────────────────────────────────┤
-│ 总耗时 (ms)      │   3248.67 │  3245.00 │  3312.00 │  3312.00 │  3189.00 │  3312.00 │
-├──────────────────────────────────────────────────────────────────────┤
-│ 总 Token 数     │    405.00 │   405.00 │   412.00 │   412.00 │   398.00 │   412.00 │
-├──────────────────────────────────────────────────────────────────────┤
-│ 平均速度        │    124.69 │   124.84 │   126.96 │   126.96 │   122.28 │   126.96 │
-├──────────────────────────────────────────────────────────────────────┤
-│ 峰值速度        │    156.32 │   156.32 │   158.41 │   158.41 │   154.23 │   158.41 │
-├──────────────────────────────────────────────────────────────────────┤
-│ 峰值 TPS         │    168.33 │   168.00 │   171.00 │   171.00 │   166.00 │   171.00 │
-└──────────────────────────────────────────────────────────────────────┘
-
-Token 速度趋势图 (TPS)
-┌────────────────────────────────────────┐
-│ 120 ┤                         █         │
-│ 100 ┤                     █ █ █ █       │
-│  80 ┤                 █ █ █ █ █ █ █     │
-│  60 ┤             █ █ █ █ █ █ █ █ █ █   │
-│  40 ┤         █ █ █ █ █ █ █ █ █ █ █ █   │
-│  20 ┤     █ █ █ █ █ █ █ █ █ █ █ █ █ █   │
-│   0 └────────────────────────────────── │
-│     0s   1s   2s   3s   4s   5s   6s    │
-└────────────────────────────────────────┘
-
-TPS 分布
-0.0-12.0 │██████████████████████████████████████████████████ 45
-12.0-24.0 │██ 3
-24.0-36.0 │ 0
-36.0-48.0 │ 0
-48.0-60.0 │ 0
-60.0-72.0 │ 0
-72.0-84.0 │ 0
-84.0-96.0 │ 0
-96.0-108.0 │ 0
-108.0-120.0 │ 0
-
-✅ 测试完成!
-```
+## 报告
 
 ### HTML 报告
 
@@ -247,11 +190,11 @@ TPS 分布
 
 报告生成后会自动在浏览器中打开。
 
-## 指标说明
+## CLI 指标说明
 
 | 指标            | 说明                                                |
 | --------------- | --------------------------------------------------- |
-| **TTFT**        | 首字延迟 - 从请求到首个 Token 到达的时间            |
+| **TTFT**        | 从请求发出到第一段非空可见文本到达            |
 | **总耗时**      | 从请求到流式响应完成的完整时长                      |
 | **总 Token 数** | 接收到的输出 Token 数量                             |
 | **平均速度**    | 每秒平均 Token 数（totalTokens / totalTime × 1000） |
@@ -265,55 +208,79 @@ TPS 曲线及峰值基于完整可见文本的本地分词，并将每个 Token 
 
 OpenAI 的 GPT-5 及更新系列、o 系列使用 `max_completion_tokens`，该上限包含推理 Token；旧模型和其他兼容模型保留 `max_tokens`。
 
+Studio 单独记录初始化耗时与原始服务端用量。比较时请保持模型、提示词、推理强度、输出长度和网络条件尽量一致。Studio JSON 与 CLI JSON 使用不同结构，Studio 导入功能用于自己导出的报告。
+
 ## 开发
+
+### 网页与桌面
+
+三个目录分别安装依赖，包管理器版本见各自 `package.json`。CLI 需要 Node.js 18 或更高版本。
+
+```sh
+pnpm install
+pnpm --dir apps/site install
+pnpm --dir apps/desktop install
+
+# 两个终端分别启动
+pnpm --dir apps/site dev
+pnpm --dir apps/desktop dev
+
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm --dir apps/desktop exec tsc --noEmit
+pnpm --dir apps/desktop build
+```
+
+网页开发地址为 `http://127.0.0.1:5173`。安装包构建与部署流程见 [Studio 文档](docs/studio.md)。
 
 ### 运行测试
 
 ```bash
 # 运行测试
-npm test
+pnpm test
 
 # 使用 UI 运行测试
-npm run test:ui
+pnpm test:ui
 
 # 生成覆盖率报告
-npm run test:coverage
+pnpm test:coverage
 ```
 
 ### 构建
 
 ```bash
-npm run build
+pnpm build
 ```
 
-### 发布
+### CLI / npm 发布
 
 本项目通过 GitHub Actions 自动发布到 npm。发布流程：
 
 ```bash
-npm run release          # 交互式选择版本类型
+pnpm release          # 交互式选择版本类型
 # 或
-npm run release patch    # 补丁版本 (1.0.0 -> 1.0.1)
-npm run release minor    # 次要版本 (1.0.0 -> 1.1.0)
-npm run release major    # 主要版本 (1.0.0 -> 2.0.0)
+pnpm release patch    # 补丁版本 (1.0.0 -> 1.0.1)
+pnpm release minor    # 次要版本 (1.0.0 -> 1.1.0)
+pnpm release major    # 主要版本 (1.0.0 -> 2.0.0)
 ```
 
 bumpp 会自动完成：更新版本 → 提交 → 打 tag → 推送
 
-推送 tag 后，GitHub Actions 会自动：
+推送 `v*` tag 后，GitHub Actions 会自动：
+
 - 构建项目
 - 发布到 npm
 - 创建 GitHub Release
 
-## 测试覆盖率
+### 桌面与网页发布
 
-本项目保持高代码覆盖率：
+[Desktop Build workflow](.github/workflows/desktop.yml) 通过手动触发构建三平台安装包并上传 Actions artifacts；GitHub Release 单独发布，使用 `desktop-v*` tag。Sites 网页独立保存版本和部署，不随 npm 或桌面版本自动更新。
 
-| 覆盖率类型 | 百分比 |
-| ---------- | ------ |
-| 语句覆盖率 | 98.69% |
-| 分支覆盖率 | 93.48% |
-| 函数覆盖率 | 100%   |
+## 验证
+
+`desktop-v1.0.0` 发布源码通过了 215 项测试、lint、类型检查和构建；CLI、Mac Apple Silicon 打包应用及 Chrome 网页均完成真实 Codex 测速。运行 `pnpm test:coverage` 获取当前覆盖率。
 
 ## 开源协议
 
@@ -325,6 +292,9 @@ MIT © [Cansiny0320](https://github.com/Cansiny0320)
 
 ## 相关链接
 
+- [公开网页](https://token-speed-studio.cansiny0320.chatgpt.site)
+- [桌面安装包](https://github.com/Cansiny0320/token-speed-tester/releases/tag/desktop-v1.0.0)
+- [Studio 文档](docs/studio.md)
 - [npm 包](https://www.npmjs.com/package/token-speed-tester)
 - [GitHub 仓库](https://github.com/Cansiny0320/token-speed-tester)
 - [问题反馈](https://github.com/Cansiny0320/token-speed-tester/issues)

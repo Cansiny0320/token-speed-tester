@@ -1,7 +1,7 @@
 {
   "name": "token-speed-tester",
   "version": "1.11.2",
-  "description": "A CLI tool to test LLM API token output speed",
+  "description": "Benchmark Codex and LLM token streaming speed with a CLI and companion web/desktop studio.",
   "type": "module",
   "packageManager": "pnpm@10.25.0",
   "author": "Cansiny0320",
@@ -14,15 +14,28 @@
   "bugs": {
     "url": "https://github.com/Cansiny0320/token-speed-tester/issues"
   },
-  "homepage": "https://github.com/Cansiny0320/token-speed-tester#readme",
+  "homepage": "https://token-speed-studio.cansiny0320.chatgpt.site",
   "keywords": [
+    "ai",
     "llm",
-    "token",
-    "speed",
-    "test",
-    "anthropic",
+    "llm-benchmark",
+    "codex",
+    "chatgpt",
     "openai",
-    "cli"
+    "anthropic",
+    "benchmark",
+    "token",
+    "tokens-per-second",
+    "time-to-first-token",
+    "streaming",
+    "performance",
+    "speed",
+    "cli",
+    "electron",
+    "macos",
+    "windows",
+    "linux",
+    "typescript"
   ],
   "exports": {
     ".": {
