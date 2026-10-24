@@ -295,8 +295,6 @@ bumpp 会自动完成：更新版本 → 提交 → 打 tag → 推送
 
 ![微信与支付宝赞助二维码](.github/sponsorship/sponsorship-cats.png)
 
-[猫猫](.github/sponsorship/sponsorship-cats.png) · [一二布布](.github/sponsorship/sponsorship-yier-bubu.png) · [水豚噜噜](.github/sponsorship/sponsorship-lulu.png)
-
 ## 开源协议
 
 MIT © [Cansiny0320](https://github.com/Cansiny0320)
