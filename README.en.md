@@ -290,6 +290,14 @@ The [Desktop Build workflow](.github/workflows/desktop.yml) builds three-platfor
 
 The `desktop-v1.0.0` release source passed 215 tests, lint, type checks, and builds. The CLI, packaged Mac Apple Silicon app, and Chrome website completed real Codex benchmarks. Run `pnpm test:coverage` for current coverage figures.
 
+## Sponsorship
+
+If this project is useful to you, you can support its continued development via WeChat Pay or Alipay. Thank you!
+
+![Support via WeChat Pay or Alipay](.github/sponsorship/sponsorship-cats.png)
+
+[Cats](.github/sponsorship/sponsorship-cats.png) · [Yier & Bubu](.github/sponsorship/sponsorship-yier-bubu.png) · [Capylulu](.github/sponsorship/sponsorship-lulu.png)
+
 ## License
 
 MIT (c) [Cansiny0320](https://github.com/Cansiny0320)

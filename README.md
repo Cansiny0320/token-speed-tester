@@ -289,6 +289,14 @@ bumpp 会自动完成：更新版本 → 提交 → 打 tag → 推送
 
 `desktop-v1.0.0` 发布源码通过了 215 项测试、lint、类型检查和构建；CLI、Mac Apple Silicon 打包应用及 Chrome 网页均完成真实 Codex 测速。运行 `pnpm test:coverage` 获取当前覆盖率。
 
+## 赞助
+
+如果这个项目对你有帮助，欢迎通过微信或支付宝支持后续开发。感谢你的支持！
+
+![微信与支付宝赞助二维码](.github/sponsorship/sponsorship-cats.png)
+
+[猫猫](.github/sponsorship/sponsorship-cats.png) · [一二布布](.github/sponsorship/sponsorship-yier-bubu.png) · [水豚噜噜](.github/sponsorship/sponsorship-lulu.png)
+
 ## 开源协议
 
 MIT © [Cansiny0320](https://github.com/Cansiny0320)
